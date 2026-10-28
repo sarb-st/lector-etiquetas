@@ -107,15 +107,24 @@ export async function iniciarLector(raiz, alDetectar) {
   if (!video) return;
   const mensaje = raiz.querySelector('.estado-camara');
   try {
-    const { BrowserMultiFormatReader } = await import(URL_ZXING);
+    // Lector solo de códigos de barras de productos (EAN, UPC): es más rápido que buscar
+    // todos los formatos, sobre todo en el iPhone.
+    const { BrowserMultiFormatOneDReader } = await import(URL_ZXING);
     if (!raiz.contains(video)) return;
-    const lector = new BrowserMultiFormatReader();
-    controlesCamara = await lector.decodeFromConstraints({ video: { facingMode: 'environment' } }, video, (resultado) => {
+    const lector = new BrowserMultiFormatOneDReader(undefined, { delayBetweenScanAttempts: 100 });
+    const restricciones = {
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+    };
+    controlesCamara = await lector.decodeFromConstraints(restricciones, video, (resultado) => {
       if (!resultado) return;
       detenerCamara();
       navigator.vibrate?.(60);
       alDetectar(resultado.getText());
     });
+    // Si en unos segundos no lee nada, un consejo.
+    setTimeout(() => {
+      if (controlesCamara && raiz.contains(mensaje)) mensaje.textContent = t('analizar.consejoCamara');
+    }, 6000);
   } catch {
     mensaje.textContent = t('analizar.camaraNoDisponible');
     mensaje.classList.add('error');
@@ -126,7 +135,7 @@ export async function iniciarLector(raiz, alDetectar) {
 export function visorCamara(textoAyuda) {
   return `
     <div class="visor">
-      <video id="video-escaner" playsinline muted aria-label="${esc(t('analizar.camara'))}"></video>
+      <video id="video-escaner" playsinline muted autoplay aria-label="${esc(t('analizar.camara'))}"></video>
       <div class="marco" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       <p class="estado-camara" role="status" aria-live="polite">${esc(textoAyuda)}</p>
     </div>`;
@@ -274,7 +283,7 @@ export function pantallaProcesando() {
         <div class="en-construccion">
           <h1>${esc(t('analizar.errorTitulo'))}</h1>
           <p>${esc(t(`analizar.error_${estado.error.tipo}`))}</p>
-          ${estado.error.detalle ? `<p>${esc(estado.error.detalle)}</p>` : ''}
+          ${estado.error.detalle ? `<p class="detalle-tecnico">${esc(t('analizar.detalleTecnico'))}: ${esc(estado.error.detalle)}</p>` : ''}
           ${
             conAjustes
               ? `<a class="boton-principal tocable centrado" href="#/ajustes">${esc(t('analizar.irAjustes'))}</a>`
@@ -334,7 +343,7 @@ async function correrAnalisis() {
     estado = nuevoEstado();
     irAlResultado(r.entrada.id);
   } catch (error) {
-    estado.error = { tipo: error.tipo ?? 'otro', detalle: error.tipo ? '' : error.message };
+    estado.error = { tipo: error.tipo ?? 'otro', detalle: error.detalle || error.message || '' };
     redibujar();
   }
 }

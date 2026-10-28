@@ -12,11 +12,28 @@ const PRECIOS = {
   'claude-haiku-5-5': { entrada: 0.1, salida: 0.5, cacheLectura: 0.01 },
 };
 
+// Saca espacios y caracteres invisibles que a veces se pegan junto con la clave
+// (por ejemplo, al copiarla desde Notas en el iPhone).
+export function limpiarClave(valor) {
+  return String(valor ?? '').replace(/[\s ​-‍⁠﻿]/g, '');
+}
+
+export function claveValida(valor) {
+  return /^sk-ant-[A-Za-z0-9_-]{20,}$/.test(valor);
+}
+
 let sdk = null;
 async function cliente() {
-  const clave = leerClave();
+  const clave = limpiarClave(leerClave());
   if (!clave) throw new ErrorIA('sin_clave');
-  if (!sdk) sdk = (await import(URL_SDK)).default;
+  if (!claveValida(clave)) throw new ErrorIA('clave_invalida', 'formato');
+  if (!sdk) {
+    try {
+      sdk = (await import(URL_SDK)).default;
+    } catch (error) {
+      throw new ErrorIA('conexion', `No se pudo cargar la librería de Claude: ${error?.message ?? error}`);
+    }
+  }
   // La clave es del propio usuario y vive solo en su teléfono: por eso se permite
   // llamar desde el navegador.
   return new sdk({ apiKey: clave, dangerouslyAllowBrowser: true, maxRetries: 2 });
@@ -24,9 +41,11 @@ async function cliente() {
 
 export class ErrorIA extends Error {
   // tipo: sin_clave | clave_invalida | sin_saldo | ocupado | conexion | rechazo | incompleto | otro
+  // detalle: texto técnico para diagnosticar (se muestra chico en la pantalla de error).
   constructor(tipo, detalle = '') {
     super(detalle || tipo);
     this.tipo = tipo;
+    this.detalle = detalle;
   }
 }
 
@@ -45,14 +64,36 @@ function sumarGasto(usd) {
   guardar('gasto', { mes, usd: anterior + usd });
 }
 
+// Texto técnico del error, con su causa, para poder diagnosticar desde la pantalla.
+function detalleTecnico(error) {
+  const partes = [`${error?.name ?? 'Error'}: ${error?.message ?? error}`];
+  if (error?.status) partes.unshift(`HTTP ${error.status}`);
+  if (error?.cause) partes.push(`causa: ${error.cause?.name ?? ''} ${error.cause?.message ?? error.cause}`.trim());
+  return partes.join(' · ');
+}
+
 function traducirError(error) {
   const estado = error?.status;
   const mensaje = String(error?.message ?? '').toLowerCase();
-  if (estado === 401 || estado === 403) return new ErrorIA('clave_invalida');
-  if (estado === 400 && mensaje.includes('credit balance')) return new ErrorIA('sin_saldo');
-  if (estado === 429 || estado === 529 || (estado >= 500 && estado < 600)) return new ErrorIA('ocupado');
-  if (!estado) return new ErrorIA('conexion', error?.message);
-  return new ErrorIA('otro', error?.message);
+  const detalle = detalleTecnico(error);
+  if (estado === 401 || estado === 403) return new ErrorIA('clave_invalida', detalle);
+  if (estado === 400 && mensaje.includes('credit balance')) return new ErrorIA('sin_saldo', detalle);
+  if (estado === 429 || estado === 529 || (estado >= 500 && estado < 600)) return new ErrorIA('ocupado', detalle);
+  if (!estado) return new ErrorIA('conexion', detalle);
+  return new ErrorIA('otro', detalle);
+}
+
+// Pedido mínimo y gratis para comprobar que la clave y la conexión funcionan.
+export async function probarClave() {
+  const api = await cliente();
+  const { modelo: claveModelo } = leerAjustes();
+  const modelo = MODELOS[claveModelo]?.id ?? MODELOS.preciso.id;
+  try {
+    await api.models.retrieve(modelo);
+    return { modelo };
+  } catch (error) {
+    throw traducirError(error);
+  }
 }
 
 // Hace un pedido que devuelve JSON con la forma del esquema.

@@ -2474,6 +2474,35 @@ select.campo-texto {
   color: var(--text-medio);
 }
 
+/* ---------- Diagnóstico ---------- */
+
+.detalle-tecnico {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.resultado-prueba:empty {
+  display: none;
+}
+
+.resultado-prueba {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.resultado-prueba.ok {
+  color: var(--text-alto);
+}
+
+.resultado-prueba.error {
+  color: var(--text-bajo);
+}
+
 /* ---------- Pantalla en construcción ---------- */
 
 .en-construccion {

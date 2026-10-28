@@ -196,6 +196,7 @@ async function correr(entrada) {
     estado.resultado = await chequear(entrada, estado.restricciones);
   } catch (error) {
     estado.error = error.tipo ?? 'otro';
+    estado.detalleError = error.detalle || error.message || '';
   }
   estado.cargando = false;
   irAResultado();
@@ -242,6 +243,7 @@ export function pantallaResultadoMcb() {
         <div class="en-construccion">
           <h1>${esc(t('analizar.errorTitulo'))}</h1>
           <p>${esc(t(`analizar.error_${estado.error}`))}</p>
+          ${estado.detalleError ? `<p class="detalle-tecnico">${esc(t('analizar.detalleTecnico'))}: ${esc(estado.detalleError)}</p>` : ''}
           <a class="boton-principal tocable centrado" href="#/me-cae-bien/escanear">${esc(t('analizar.reintentar'))}</a>
         </div>
       </div>`;

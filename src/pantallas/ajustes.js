@@ -46,10 +46,13 @@ function seccionClave() {
       <form class="fila-clave" data-formulario="clave">
         <label class="visualmente-oculto" for="campo-clave">${esc(t('ajustes.clave'))}</label>
         <input id="campo-clave" class="campo-texto" type="password" name="clave" autocomplete="off"
-          spellcheck="false" placeholder="${esc(clave ? t('ajustes.claveReemplazar') : 'sk-ant-…')}" />
+          autocapitalize="off" autocorrect="off" spellcheck="false"
+          placeholder="${esc(clave ? t('ajustes.claveReemplazar') : 'sk-ant-…')}" />
         <button type="submit" class="boton-principal chico tocable">${esc(t('ajustes.guardar'))}</button>
       </form>
       <p class="mensaje-formulario" role="status" aria-live="polite"></p>
+      ${clave ? `<button type="button" class="boton-pastilla grande tocable" data-accion="probar-clave">${esc(t('ajustes.probar'))}</button>` : ''}
+      <p class="resultado-prueba" role="status" aria-live="polite"></p>
       <a class="link-flecha tocable" href="#/crear-clave">${esc(t('ajustes.comoCrear'))}${icono('derecha', 'sm')}</a>
     </section>`;
 }
@@ -125,8 +128,30 @@ export function pantallaAjustes() {
 }
 
 // Devuelve true si la acción era de esta pantalla.
+// Prueba la clave con un pedido mínimo y gratis, y muestra el resultado (o el error real).
+async function probar(boton) {
+  const salida = document.querySelector('.resultado-prueba');
+  salida.className = 'resultado-prueba';
+  salida.textContent = t('ajustes.probando');
+  boton.disabled = true;
+  try {
+    const { probarClave } = await import('../ia/cliente.js');
+    await probarClave();
+    salida.textContent = t('ajustes.pruebaOk');
+    salida.classList.add('ok');
+  } catch (error) {
+    salida.textContent = `${t(`analizar.error_${error.tipo ?? 'otro'}`)} ${error.detalle ? `(${t('analizar.detalleTecnico')}: ${error.detalle})` : ''}`;
+    salida.classList.add('error');
+  }
+  boton.disabled = false;
+}
+
 export function accionAjustes(boton, redibujar) {
   const accion = boton.dataset.accion;
+  if (accion === 'probar-clave') {
+    probar(boton);
+    return true;
+  }
   if (accion === 'elegir-modelo') {
     guardarAjustes({ modelo: boton.dataset.modelo });
   } else if (accion === 'elegir-idioma') {
@@ -142,9 +167,10 @@ export function accionAjustes(boton, redibujar) {
 
 export function enviarFormularioAjustes(formulario, redibujar) {
   if (formulario.dataset.formulario !== 'clave') return false;
-  const valor = formulario.clave.value.trim();
+  // Se sacan espacios y caracteres invisibles que a veces vienen al pegar.
+  const valor = String(formulario.clave.value).replace(/[\s ​-‍⁠﻿]/g, '');
   const mensaje = formulario.parentElement.querySelector('.mensaje-formulario');
-  if (!valor.startsWith('sk-ant-') || valor.length < 20) {
+  if (!/^sk-ant-[A-Za-z0-9_-]{20,}$/.test(valor)) {
     mensaje.textContent = t('ajustes.claveInvalida');
     mensaje.classList.add('error');
     formulario.clave.focus();
