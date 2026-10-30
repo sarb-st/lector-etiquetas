@@ -161,12 +161,20 @@ async function correrDiagnostico(boton) {
         <span class="detalle-tecnico">${esc(r.detalle)} · ${r.ms} ms</span></span></li>`,
     )
     .join('');
+  // Conclusión en palabras, según qué pruebas pasaron.
+  const ok = Object.fromEntries(informe.resultados.map((r) => [r.nombre, r.ok]));
+  let conclusion = 'conclusion_ok';
+  if (!ok.internet) conclusion = 'conclusion_internet';
+  else if (!ok.claude_simple) conclusion = 'conclusion_red';
+  else if (ok.claude_clave === false || ok.claude_libreria === false) conclusion = 'conclusion_clave';
   const texto = [
+    t(`ajustes.${conclusion}`),
     ...informe.resultados.map((r) => `${r.ok ? 'OK' : 'FALLA'} ${r.nombre}: ${r.detalle} (${r.ms} ms)`),
     `instalada: ${informe.instalada}`,
     informe.navegador,
   ].join('\n');
   salida.innerHTML = `
+    <p class="conclusion-diagnostico ${conclusion === 'conclusion_ok' ? 'ok' : 'error'}">${esc(t(`ajustes.${conclusion}`))}</p>
     <ul class="lista-diagnostico">${filas}</ul>
     <p class="detalle-tecnico">${esc(informe.navegador)}${informe.instalada ? ' · app instalada' : ''}</p>
     <button type="button" class="boton-pastilla grande tocable" data-accion="copiar-diagnostico">${esc(t('ajustes.copiar'))}</button>`;

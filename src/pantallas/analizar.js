@@ -276,7 +276,7 @@ export function pantallaProcesando() {
       </div>`;
   }
   if (estado.error) {
-    const conAjustes = ['sin_clave', 'clave_invalida', 'sin_saldo'].includes(estado.error.tipo);
+    const conAjustes = ['sin_clave', 'clave_invalida', 'clave_rechazada', 'sin_saldo'].includes(estado.error.tipo);
     return `
       <div class="pantalla">
         ${barra()}

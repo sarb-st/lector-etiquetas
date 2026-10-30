@@ -49,7 +49,7 @@ async function cliente() {
 }
 
 export class ErrorIA extends Error {
-  // tipo: sin_clave | clave_invalida | sin_saldo | ocupado | conexion | rechazo | incompleto | otro
+  // tipo: sin_clave | clave_invalida | clave_rechazada | sin_saldo | ocupado | conexion | rechazo | incompleto | otro
   // detalle: texto técnico para diagnosticar (se muestra chico en la pantalla de error).
   constructor(tipo, detalle = '') {
     super(detalle || tipo);
@@ -81,14 +81,32 @@ function detalleTecnico(error) {
   return partes.join(' · ');
 }
 
-function traducirError(error) {
+// ¿Se llega a Claude sin clave? Contesta "401, falta la clave" con el permiso para navegadores.
+export async function claudeResponde() {
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/models', {
+      headers: { 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    });
+    return r.status === 401;
+  } catch {
+    return false;
+  }
+}
+
+async function traducirError(error) {
   const estado = error?.status;
   const mensaje = String(error?.message ?? '').toLowerCase();
   const detalle = detalleTecnico(error);
   if (estado === 401 || estado === 403) return new ErrorIA('clave_invalida', detalle);
   if (estado === 400 && mensaje.includes('credit balance')) return new ErrorIA('sin_saldo', detalle);
   if (estado === 429 || estado === 529 || (estado >= 500 && estado < 600)) return new ErrorIA('ocupado', detalle);
-  if (!estado) return new ErrorIA('conexion', detalle);
+  if (!estado) {
+    // Cuando Claude rechaza una clave, su respuesta llega sin el permiso para navegadores
+    // y el navegador la muestra como un error de conexión. Si Claude sí responde sin
+    // clave, el problema es la clave.
+    if (await claudeResponde()) return new ErrorIA('clave_rechazada', detalle);
+    return new ErrorIA('conexion', detalle);
+  }
   return new ErrorIA('otro', detalle);
 }
 
@@ -101,7 +119,7 @@ export async function probarClave() {
     await api.models.retrieve(modelo);
     return { modelo };
   } catch (error) {
-    throw traducirError(error);
+    throw await traducirError(error);
   }
 }
 
@@ -134,7 +152,7 @@ export async function pedirJSON({ sistema, contenido, esquema, esfuerzo = 'mediu
       respuesta = await api.messages.create(pedido);
     }
   } catch (error) {
-    throw traducirError(error);
+    throw await traducirError(error);
   }
 
   const costo = costoEnDolares(respuesta.model ?? modelo, respuesta.usage);

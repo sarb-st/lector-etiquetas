@@ -2496,6 +2496,22 @@ select.campo-texto {
   gap: var(--s-2);
 }
 
+.conclusion-diagnostico {
+  font-weight: 700;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+}
+
+.conclusion-diagnostico.ok {
+  background: var(--tint-alto);
+  color: var(--text-alto);
+}
+
+.conclusion-diagnostico.error {
+  background: var(--tint-bajo);
+  color: var(--text-bajo);
+}
+
 .lista-diagnostico {
   list-style: none;
   margin: 0;
