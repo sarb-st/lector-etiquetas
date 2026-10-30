@@ -45,9 +45,13 @@ function seccionClave() {
       }
       <form class="fila-clave" data-formulario="clave">
         <label class="visualmente-oculto" for="campo-clave">${esc(t('ajustes.clave'))}</label>
-        <input id="campo-clave" class="campo-texto" type="password" name="clave" autocomplete="off"
-          autocapitalize="off" autocorrect="off" spellcheck="false"
-          placeholder="${esc(clave ? t('ajustes.claveReemplazar') : 'sk-ant-…')}" />
+        <span class="campo-con-ojo">
+          <input id="campo-clave" class="campo-texto" type="password" name="clave" autocomplete="off"
+            autocapitalize="off" autocorrect="off" spellcheck="false"
+            placeholder="${esc(clave ? t('ajustes.claveReemplazar') : 'sk-ant-…')}" />
+          <button type="button" class="boton-ojo tocable" data-accion="ver-clave" aria-pressed="false"
+            aria-controls="campo-clave" aria-label="${esc(t('ajustes.mostrarClave'))}">${icono('ojo')}</button>
+        </span>
         <button type="submit" class="boton-principal chico tocable">${esc(t('ajustes.guardar'))}</button>
       </form>
       <p class="mensaje-formulario" role="status" aria-live="polite"></p>
@@ -116,7 +120,7 @@ export function pantallaAjustes() {
   return `
     <div class="pantalla">
       <header class="barra-superior">
-        <a class="boton-redondo tocable" href="#/perfil" aria-label="${esc(t('resultado.volver'))}">${icono('atras')}</a>
+        <a class="boton-redondo tocable" href="#/" aria-label="${esc(t('resultado.volver'))}">${icono('atras')}</a>
         <h1 class="titulo-pantalla">${esc(t('ajustes.titulo'))}</h1>
         <span class="espaciador" aria-hidden="true"></span>
       </header>
@@ -186,6 +190,16 @@ export function accionAjustes(boton, redibujar) {
   const accion = boton.dataset.accion;
   if (accion === 'probar-clave') {
     probar(boton);
+    return true;
+  }
+  if (accion === 'ver-clave') {
+    // Muestra u oculta lo que se escribió, sin borrar nada.
+    const campo = document.getElementById('campo-clave');
+    const visible = campo.type === 'password';
+    campo.type = visible ? 'text' : 'password';
+    boton.setAttribute('aria-pressed', String(visible));
+    boton.setAttribute('aria-label', t(visible ? 'ajustes.ocultarClave' : 'ajustes.mostrarClave'));
+    boton.innerHTML = icono(visible ? 'ojoTachado' : 'ojo');
     return true;
   }
   if (accion === 'diagnosticar') {

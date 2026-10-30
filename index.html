@@ -22,6 +22,18 @@
     <link rel="stylesheet" href="src/ui/estilos.css" />
   </head>
   <body>
+    <!-- Bienvenida: un guiño breve al abrir la app. La saca app.js. -->
+    <div id="bienvenida" class="bienvenida" aria-hidden="true">
+      <svg class="logo-animado" viewBox="0 0 100 100">
+        <path class="esquina" d="M20 38 V20 H38" />
+        <path class="esquina" d="M62 20 H80 V38" />
+        <path class="esquina" d="M80 62 V80 H62" />
+        <path class="esquina" d="M38 80 H20 V62" />
+        <rect class="rombo" x="37" y="37" width="26" height="26" rx="6" />
+      </svg>
+      <p class="nombre">Lector de etiquetas</p>
+      <p class="saludo"></p>
+    </div>
     <main id="app"></main>
     <nav id="tabbar" class="tabbar" aria-label="Principal" hidden></nav>
     <dialog id="hoja" class="hoja" aria-labelledby="hoja-titulo"></dialog>

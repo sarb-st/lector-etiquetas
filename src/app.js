@@ -65,7 +65,7 @@ const rutas = [
   { patron: /^\/mis-productos$/, tab: 'misProductos', dibujar: () => pantallaMisProductos() },
   { patron: /^\/guia$/, tab: 'guia', dibujar: () => enConstruccion(t('tabs.guia')) },
   { patron: /^\/perfil$/, tab: 'perfil', dibujar: () => pantallaPerfil() },
-  { patron: /^\/ajustes$/, tab: 'perfil', dibujar: () => pantallaAjustes() },
+  { patron: /^\/ajustes$/, tab: null, dibujar: () => pantallaAjustes() },
   { patron: /^\/crear-clave$/, tab: null, dibujar: () => pantallaCrearClave() },
   { patron: /^\/preguntas\/editar\/([a-z0-9]+)$/, tab: null, dibujar: (m) => pantallaEditarPregunta(m[1]) },
   { patron: /^\/preguntas\/([a-z]+)(?:\/(\d+))?$/, tab: null, dibujar: (m) => pantallaPreguntas(m[1], m[2]) },
@@ -222,8 +222,28 @@ window.addEventListener('hashchange', () => {
   navegar();
 });
 
+// Bienvenida: la primera vez dura un poco más y saluda; después es un guiño corto.
+// Se cuenta desde que empezó a cargar la página, así nunca suma espera de más.
+function despedirBienvenida(primeraVez) {
+  const bienvenida = document.getElementById('bienvenida');
+  if (!bienvenida) return;
+  bienvenida.querySelector('.nombre').textContent = t('app.nombre');
+  if (primeraVez) {
+    bienvenida.querySelector('.saludo').textContent = t('bienvenida.saludo');
+    bienvenida.classList.add('con-saludo');
+  }
+  const reducido = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const duracion = reducido ? 400 : primeraVez ? 1600 : 900;
+  const falta = Math.max(0, duracion - performance.now());
+  setTimeout(() => {
+    bienvenida.classList.add('saliendo');
+    setTimeout(() => bienvenida.remove(), 300);
+  }, falta);
+}
+
 document.documentElement.lang = idioma();
 document.title = t('app.nombre');
+despedirBienvenida(!leerPerfil() && leerHistorial().length === 0);
 navegar();
 
 // Para abrir sin conexión y poder instalarla en la pantalla de inicio.

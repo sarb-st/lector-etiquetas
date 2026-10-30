@@ -78,7 +78,6 @@ export function pantallaPerfil() {
     <div class="pantalla">
       <header class="barra-superior">
         <h1 class="titulo-pantalla">${esc(t('perfil.titulo'))}</h1>
-        <a class="boton-redondo tocable" href="#/ajustes" aria-label="${esc(t('ajustes.titulo'))}">${icono('ajustes')}</a>
       </header>
       <p class="bajada">${esc(t('perfil.bajada'))}</p>
       ${bloqueCompletitud(perfil)}

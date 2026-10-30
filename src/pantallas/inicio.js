@@ -64,7 +64,7 @@ export function pantallaInicio() {
     <div class="pantalla">
       <header class="barra-superior">
         <span class="marca"><span class="marca-punto" aria-hidden="true"></span>${esc(t('app.nombre'))}</span>
-        <a class="boton-redondo tocable" href="#/perfil" aria-label="${esc(t('inicio.perfil'))}">${icono('persona')}</a>
+        <a class="boton-redondo tocable" href="#/ajustes" aria-label="${esc(t('ajustes.titulo'))}">${icono('ajustes')}</a>
       </header>
 
       <div class="objetivo-fila">${filaObjetivo(perfil)}${avisoPerfil(perfil)}</div>

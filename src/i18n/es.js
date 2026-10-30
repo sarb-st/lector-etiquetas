@@ -8,6 +8,8 @@ export default {
 
   app: { nombre: 'Lector de etiquetas' },
 
+  bienvenida: { saludo: '¡Hola! Vamos a conocerte.' },
+
   tabs: { inicio: 'Inicio', misProductos: 'Mis productos', guia: 'Guía', perfil: 'Perfil' },
 
   inicio: {
@@ -216,6 +218,8 @@ export default {
     claveReemplazar: 'Pegá una clave nueva para reemplazarla',
     claveInvalida: 'Eso no parece una clave de Claude. Tiene que empezar con "sk-ant-" y estar completa.',
     probar: 'Probar la clave',
+    mostrarClave: 'Mostrar la clave',
+    ocultarClave: 'Ocultar la clave',
     probando: 'Probando…',
     pruebaOk: 'La clave funciona y hay conexión con Claude.',
     diagnostico: 'Diagnóstico de conexión',

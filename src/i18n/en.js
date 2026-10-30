@@ -7,6 +7,8 @@ export default {
 
   app: { nombre: 'Label Reader' },
 
+  bienvenida: { saludo: 'Hi! Let’s get to know you.' },
+
   tabs: { inicio: 'Home', misProductos: 'My products', guia: 'Guide', perfil: 'Profile' },
 
   inicio: {
@@ -213,6 +215,8 @@ export default {
     claveReemplazar: 'Paste a new key to replace it',
     claveInvalida: 'That doesn’t look like a Claude key. It should start with "sk-ant-" and be complete.',
     probar: 'Test the key',
+    mostrarClave: 'Show the key',
+    ocultarClave: 'Hide the key',
     probando: 'Testing…',
     pruebaOk: 'The key works and Claude is reachable.',
     diagnostico: 'Connection check',
