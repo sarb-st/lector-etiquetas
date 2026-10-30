@@ -22,6 +22,15 @@ export function claveValida(valor) {
   return /^sk-ant-[A-Za-z0-9_-]{20,}$/.test(valor);
 }
 
+// La librería agrega un encabezado "user-agent". Chrome lo descarta solo; otros
+// navegadores pueden mandarlo y agregar un paso de permisos más. Se saca para que
+// todos los navegadores manden el mismo pedido.
+function fetchSinUserAgent(url, opciones = {}) {
+  const encabezados = new Headers(opciones.headers);
+  encabezados.delete('user-agent');
+  return fetch(url, { ...opciones, headers: encabezados });
+}
+
 let sdk = null;
 async function cliente() {
   const clave = limpiarClave(leerClave());
@@ -36,7 +45,7 @@ async function cliente() {
   }
   // La clave es del propio usuario y vive solo en su teléfono: por eso se permite
   // llamar desde el navegador.
-  return new sdk({ apiKey: clave, dangerouslyAllowBrowser: true, maxRetries: 2 });
+  return new sdk({ apiKey: clave, dangerouslyAllowBrowser: true, maxRetries: 2, fetch: fetchSinUserAgent });
 }
 
 export class ErrorIA extends Error {

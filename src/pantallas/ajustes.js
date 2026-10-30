@@ -53,6 +53,8 @@ function seccionClave() {
       <p class="mensaje-formulario" role="status" aria-live="polite"></p>
       ${clave ? `<button type="button" class="boton-pastilla grande tocable" data-accion="probar-clave">${esc(t('ajustes.probar'))}</button>` : ''}
       <p class="resultado-prueba" role="status" aria-live="polite"></p>
+      <button type="button" class="link-flecha tocable" data-accion="diagnosticar">${esc(t('ajustes.diagnostico'))}${icono('derecha', 'sm')}</button>
+      <div class="resultado-diagnostico" aria-live="polite"></div>
       <a class="link-flecha tocable" href="#/crear-clave">${esc(t('ajustes.comoCrear'))}${icono('derecha', 'sm')}</a>
     </section>`;
 }
@@ -146,10 +148,48 @@ async function probar(boton) {
   boton.disabled = false;
 }
 
+// Corre el diagnóstico de conexión y muestra cada prueba con su resultado.
+async function correrDiagnostico(boton) {
+  const salida = document.querySelector('.resultado-diagnostico');
+  salida.innerHTML = `<p>${esc(t('ajustes.probando'))}</p>`;
+  boton.disabled = true;
+  const { diagnosticar } = await import('../ia/diagnostico.js');
+  const informe = await diagnosticar();
+  const filas = informe.resultados
+    .map(
+      (r) => `<li class="${r.ok ? 'ok' : 'error'}">${icono(r.ok ? 'tilde' : 'cruz', 'sm')}<span><strong>${esc(t(`ajustes.diag_${r.nombre}`))}</strong>
+        <span class="detalle-tecnico">${esc(r.detalle)} · ${r.ms} ms</span></span></li>`,
+    )
+    .join('');
+  const texto = [
+    ...informe.resultados.map((r) => `${r.ok ? 'OK' : 'FALLA'} ${r.nombre}: ${r.detalle} (${r.ms} ms)`),
+    `instalada: ${informe.instalada}`,
+    informe.navegador,
+  ].join('\n');
+  salida.innerHTML = `
+    <ul class="lista-diagnostico">${filas}</ul>
+    <p class="detalle-tecnico">${esc(informe.navegador)}${informe.instalada ? ' · app instalada' : ''}</p>
+    <button type="button" class="boton-pastilla grande tocable" data-accion="copiar-diagnostico">${esc(t('ajustes.copiar'))}</button>`;
+  salida.dataset.texto = texto;
+  boton.disabled = false;
+}
+
 export function accionAjustes(boton, redibujar) {
   const accion = boton.dataset.accion;
   if (accion === 'probar-clave') {
     probar(boton);
+    return true;
+  }
+  if (accion === 'diagnosticar') {
+    correrDiagnostico(boton);
+    return true;
+  }
+  if (accion === 'copiar-diagnostico') {
+    const texto = document.querySelector('.resultado-diagnostico')?.dataset.texto ?? '';
+    navigator.clipboard?.writeText(texto).then(
+      () => (boton.textContent = t('ajustes.copiado')),
+      () => {},
+    );
     return true;
   }
   if (accion === 'elegir-modelo') {
