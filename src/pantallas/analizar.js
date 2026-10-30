@@ -3,6 +3,7 @@
 
 import { t } from '../i18n/index.js';
 import { icono } from '../ui/iconos.js';
+import { logoAnimado } from '../ui/logo.js';
 import { esc } from '../ui/comunes.js';
 import { leerPerfil, buscarEnHistorial } from '../datos/almacen.js';
 import { leerClave } from './ajustes.js';
@@ -293,21 +294,24 @@ export function pantallaProcesando() {
         </div>
       </div>`;
   }
+  return `
+    <div class="pantalla procesando">
+      <div class="logo-en-app">${logoAnimado('logo-carga')}</div>
+      <h1>${esc(t('analizar.procesandoTitulo'))}</h1>
+      <ol class="pasos-analisis" aria-live="polite">${listaPasos()}</ol>
+      <p class="ayuda-bloque">${esc(t('analizar.procesandoAyuda'))}</p>
+    </div>`;
+}
+
+function listaPasos() {
   const actual = PASOS.indexOf(estado.paso);
-  const pasos = PASOS.filter((p) => p !== 'buscando' || estado.codigo)
+  return PASOS.filter((p) => p !== 'buscando' || estado.codigo)
     .map((p) => {
       const i = PASOS.indexOf(p);
       const clase = i < actual ? 'hecho' : i === actual ? 'actual' : '';
       return `<li class="${clase}">${i < actual ? icono('tilde', 'sm') : '<span class="punto" aria-hidden="true"></span>'}${esc(t(`analizar.paso_${p}`))}</li>`;
     })
     .join('');
-  return `
-    <div class="pantalla procesando">
-      <div class="cargador" aria-hidden="true"><span></span><span></span><span></span></div>
-      <h1>${esc(t('analizar.procesandoTitulo'))}</h1>
-      <ol class="pasos-analisis" aria-live="polite">${pasos}</ol>
-      <p class="ayuda-bloque">${esc(t('analizar.procesandoAyuda'))}</p>
-    </div>`;
 }
 
 async function correrAnalisis() {
@@ -315,6 +319,13 @@ async function correrAnalisis() {
   const redibujar = () => {
     if (location.hash === '#/analizar/procesando') window.dispatchEvent(new HashChangeEvent('hashchange'));
     else location.hash = '#/analizar/procesando';
+  };
+  // Al avanzar de paso, si ya se ve la pantalla de espera, se cambia solo la lista:
+  // así la animación del logo sigue su ciclo sin volver a empezar.
+  const avanzar = () => {
+    const lista = document.querySelector('.procesando .pasos-analisis');
+    if (lista && location.hash === '#/analizar/procesando') lista.innerHTML = listaPasos();
+    else redibujar();
   };
   try {
     const fuente = estado.off ? 'open_food_facts' : 'fotos';
@@ -328,7 +339,7 @@ async function correrAnalisis() {
     };
     const r = await analizarProducto(pedido, (paso) => {
       estado.paso = paso;
-      redibujar();
+      avanzar();
     });
     if (r.pregunta) {
       estado.pregunta = r.pregunta;

@@ -63,6 +63,34 @@
   --ease: cubic-bezier(0.2, 0, 0, 1);
 
   --tabbar-h: 64px;
+
+  /* Logo y animaciones (docs/animaciones.md, sección 3). Iguales en claro y oscuro. */
+  --logo-cobalto: #2e3fe5;
+  --logo-ambar: #f2b705;
+  --logo-crema: #f4f1ea;
+}
+
+/* El logo sobre cobalto: ícono, bienvenida y carga. */
+.logo-marca {
+  --color-fondo: var(--logo-cobalto);
+  --color-marco: var(--logo-ambar);
+  --color-objetos: var(--logo-crema);
+  --color-escaneo: rgb(242 183 5 / 0.7);
+}
+
+/* El logo dentro de la app, sobre el fondo claro (por ejemplo, mientras analiza). */
+.logo-en-app {
+  --color-fondo: var(--bg);
+  --color-marco: #2e3fe5;
+  --color-objetos: var(--ink);
+  --color-escaneo: #f2b705;
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo-en-app {
+    --color-marco: #7b88ff;
+    --color-escaneo: #f7c63a;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1848,7 +1876,7 @@ dialog.hoja::backdrop {
   position: absolute;
   width: 36px;
   height: 36px;
-  border: 4px solid var(--band-medio);
+  border: 4px solid var(--logo-ambar);
 }
 
 .visor .marco span:nth-child(1) {
@@ -2597,8 +2625,8 @@ select.campo-texto {
   align-items: center;
   justify-content: center;
   gap: var(--s-3);
-  background: #2e3fe5;
-  color: #f4f1ea;
+  background: var(--color-fondo);
+  color: var(--color-objetos);
   transition: opacity 260ms var(--ease), transform 260ms var(--ease);
 }
 
@@ -2608,41 +2636,126 @@ select.campo-texto {
   pointer-events: none;
 }
 
+/* El logo animado (src/ui/logo.js). Todos los trazos tienen pathLength="1":
+   con un guion de largo 1 y un hueco de largo 2, correr el desfase de 1 a 0
+   dibuja la línea, y de 0 a -1,5 la borra en el mismo sentido. El hueco es más
+   largo que la línea para que los extremos no asomen como puntitos sueltos. */
 .logo-animado {
-  width: 132px;
-  height: 132px;
+  width: 168px;
+  height: 168px;
   overflow: visible;
 }
 
-.logo-animado .esquina {
+.logo-animado path,
+.logo-animado line {
   fill: none;
-  stroke: #f2b705;
-  stroke-width: 7;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 40;
-  stroke-dashoffset: 40;
-  animation: dibujar-esquina 420ms var(--ease) forwards;
 }
 
-.logo-animado .esquina:nth-child(2) {
-  animation-delay: 70ms;
+.logo-animado .marco path {
+  stroke: var(--color-marco);
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
 }
 
-.logo-animado .esquina:nth-child(3) {
-  animation-delay: 140ms;
+.logo-animado .objeto path {
+  stroke: var(--color-objetos);
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
 }
 
-.logo-animado .esquina:nth-child(4) {
-  animation-delay: 210ms;
+.logo-animado .escaneo {
+  stroke: var(--color-escaneo);
+  stroke-width: 2;
+  opacity: 0;
 }
 
-.logo-animado .rombo {
-  fill: #f4f1ea;
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: rotate(45deg) scale(0);
-  animation: aparecer-rombo 620ms cubic-bezier(0.34, 1.56, 0.64, 1) 180ms forwards;
+@keyframes logo-dibujar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes logo-borrar {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -1.5;
+  }
+}
+
+@keyframes logo-escanear {
+  0% {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(84px);
+    opacity: 0;
+  }
+}
+
+/* ---- Bienvenida: marco, escaneo y tetrapack → pera → muffin (unos 2 segundos) ---- */
+
+.logo-bienvenida .marco path {
+  animation: logo-dibujar 400ms var(--ease) both;
+}
+
+.logo-bienvenida .marco > g:nth-child(2) path {
+  animation-delay: 60ms;
+}
+
+.logo-bienvenida .marco > g:nth-child(3) path {
+  animation-delay: 120ms;
+}
+
+.logo-bienvenida .marco > g:nth-child(4) path {
+  animation-delay: 180ms;
+}
+
+.logo-bienvenida .escaneo {
+  animation: logo-escanear 600ms ease-in-out 250ms both;
+}
+
+.logo-bienvenida .tetrapack path {
+  animation:
+    logo-dibujar 350ms ease-in-out 350ms both,
+    logo-borrar 250ms ease-in-out 800ms forwards;
+}
+
+.logo-bienvenida .pera path {
+  animation:
+    logo-dibujar 350ms ease-in-out 950ms both,
+    logo-borrar 250ms ease-in-out 1400ms forwards;
+}
+
+.logo-bienvenida .muffin path {
+  animation: logo-dibujar 350ms ease-in-out 1550ms both;
+}
+
+/* Las veces siguientes, un guiño corto: marco, escaneo y el tetrapack. */
+.bienvenida.corta .logo-bienvenida .tetrapack path {
+  animation: logo-dibujar 350ms ease-in-out 300ms both;
+}
+
+.bienvenida.corta .logo-bienvenida .pera path,
+.bienvenida.corta .logo-bienvenida .muffin path {
+  animation: none;
+}
+
+.bienvenida.corta .logo-bienvenida .escaneo {
+  animation-duration: 500ms;
+  animation-delay: 200ms;
 }
 
 .bienvenida .nombre {
@@ -2651,7 +2764,11 @@ select.campo-texto {
   font-weight: 800;
   letter-spacing: -0.02em;
   opacity: 0;
-  animation: subir-texto 380ms var(--ease) 320ms forwards;
+  animation: subir-texto 380ms var(--ease) 1700ms forwards;
+}
+
+.bienvenida.corta .nombre {
+  animation-delay: 400ms;
 }
 
 .bienvenida .saludo {
@@ -2661,18 +2778,52 @@ select.campo-texto {
 }
 
 .bienvenida.con-saludo .saludo {
-  animation: subir-texto 380ms var(--ease) 650ms forwards;
+  animation: subir-texto 380ms var(--ease) 1900ms forwards;
 }
 
-@keyframes dibujar-esquina {
-  to {
+/* ---- Mientras analiza: el ciclo de objetos en bucle, 1,2 s cada uno ---- */
+
+.logo-carga {
+  width: 132px;
+  height: 132px;
+}
+
+.logo-carga .marco path {
+  stroke-dashoffset: 0;
+}
+
+.logo-carga .escaneo {
+  animation: logo-escanear 1200ms ease-in-out infinite;
+}
+
+.logo-carga .objeto path {
+  animation: logo-ciclo 3600ms ease-in-out infinite;
+}
+
+.logo-carga .pera path {
+  animation-delay: 1200ms;
+}
+
+.logo-carga .muffin path {
+  animation-delay: 2400ms;
+}
+
+/* Un tercio del ciclo por objeto: se dibuja, se queda y se borra mientras empieza el siguiente. */
+@keyframes logo-ciclo {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  11% {
     stroke-dashoffset: 0;
   }
-}
-
-@keyframes aparecer-rombo {
-  to {
-    transform: rotate(225deg) scale(1);
+  29% {
+    stroke-dashoffset: 0;
+  }
+  37% {
+    stroke-dashoffset: -1.5;
+  }
+  100% {
+    stroke-dashoffset: -1.5;
   }
 }
 
@@ -2687,13 +2838,16 @@ select.campo-texto {
   }
 }
 
-/* Con "reducir movimiento", el logo aparece armado y sin giros. */
+/* Con "reducir movimiento": el logo armado y quieto (marco y tetrapack), sin escaneo. */
 @media (prefers-reduced-motion: reduce) {
-  .logo-animado .esquina {
-    stroke-dashoffset: 0;
+  .logo-animado *,
+  .bienvenida .nombre,
+  .bienvenida .saludo {
+    animation: none !important;
   }
-  .logo-animado .rombo {
-    transform: rotate(45deg) scale(1);
+  .logo-animado .marco path,
+  .logo-animado .tetrapack path {
+    stroke-dashoffset: 0;
   }
   .bienvenida .nombre,
   .bienvenida.con-saludo .saludo {

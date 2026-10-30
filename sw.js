@@ -4,7 +4,7 @@
 // - Claude y Open Food Facts nunca se guardan: siempre van a la red.
 // El nombre del caché es propio de esta app, porque usuario.github.io lo comparten todas.
 
-const CACHE = 'lector-etiquetas-v8';
+const CACHE = 'lector-etiquetas-v10';
 const EXTERNOS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com', 'images.openfoodfacts.org'];
 
 self.addEventListener('install', (evento) => {

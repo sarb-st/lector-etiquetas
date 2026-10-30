@@ -10,8 +10,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Etiquetas" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="iconos/icono-180.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="iconos/icono-192.png" />
+    <link rel="apple-touch-icon" href="iconos/icono-180.png?v=2" />
+    <link rel="icon" type="image/png" sizes="192x192" href="iconos/icono-192.png?v=2" />
     <title>Lector de etiquetas</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,14 +22,35 @@
     <link rel="stylesheet" href="src/ui/estilos.css" />
   </head>
   <body>
-    <!-- Bienvenida: un guiño breve al abrir la app. La saca app.js. -->
-    <div id="bienvenida" class="bienvenida" aria-hidden="true">
-      <svg class="logo-animado" viewBox="0 0 100 100">
-        <path class="esquina" d="M20 38 V20 H38" />
-        <path class="esquina" d="M62 20 H80 V38" />
-        <path class="esquina" d="M80 62 V80 H62" />
-        <path class="esquina" d="M38 80 H20 V62" />
-        <rect class="rombo" x="37" y="37" width="26" height="26" rx="6" />
+    <!-- Bienvenida: el logo se dibuja al abrir la app. La saca app.js; un toque la saltea.
+         Es una copia fija de src/ui/logo.js (dibujos de docs/logo/), para que aparezca al instante. -->
+    <div id="bienvenida" class="bienvenida logo-marca" aria-hidden="true">
+      <svg class="logo-animado logo-bienvenida" viewBox="0 0 100 100" focusable="false">
+        <g class="marco">
+          <g><path d="M12 12 Q10 14 10 18 V28" pathLength="1" /><path d="M12 12 Q14 10 18 10 H28" pathLength="1" /></g>
+          <g transform="matrix(-1 0 0 1 100 0)"><path d="M12 12 Q10 14 10 18 V28" pathLength="1" /><path d="M12 12 Q14 10 18 10 H28" pathLength="1" /></g>
+          <g transform="matrix(1 0 0 -1 0 100)"><path d="M12 12 Q10 14 10 18 V28" pathLength="1" /><path d="M12 12 Q14 10 18 10 H28" pathLength="1" /></g>
+          <g transform="matrix(-1 0 0 -1 100 100)"><path d="M12 12 Q10 14 10 18 V28" pathLength="1" /><path d="M12 12 Q14 10 18 10 H28" pathLength="1" /></g>
+        </g>
+        <line class="escaneo" x1="18" x2="82" y1="0" y2="0" />
+        <g class="objeto tetrapack">
+          <path d="M37 74 V44 L43 35 H57 L63 44 V74 Z" pathLength="1" />
+          <path d="M43 35 V29 H57 V35" pathLength="1" />
+          <path d="M37 44 H63" pathLength="1" />
+        </g>
+        <g class="objeto pera">
+          <path d="M50 39 C44 39 43 44 42 49 C41 54 35 57 35 65 C35 71 41 75 50 75 C59 75 65 71 65 65 C65 57 59 54 58 49 C57 44 56 39 50 39 Z" pathLength="1" />
+          <path d="M50 39 C49 35 47 33 44 32" pathLength="1" />
+          <path d="M51 37 C51 31 55 28 61 28 C61 33 57 36 51 37 Z" pathLength="1" />
+          <path d="M60 59 L60 59 M60 63 C60 67 58 69 55 70" pathLength="1" />
+        </g>
+        <g class="objeto muffin">
+          <path d="M34 57 H66 L61 75 H39 Z" pathLength="1" />
+          <path d="M45 61 L46 71 M55 61 L54 71" pathLength="1" />
+          <path d="M34 57 C29 57 29 49 35 48 C34 41 41 38 45 41 C47 37 53 37 55 41 C59 38 66 41 65 48 C71 49 71 57 66 57" pathLength="1" />
+          <path d="M50 32 A3.5 3.5 0 1 0 50.01 32" pathLength="1" />
+          <path d="M42 50 L43 49 M50 46 L52 46 M58 50 L59 51" pathLength="1" />
+        </g>
       </svg>
       <p class="nombre">Lector de etiquetas</p>
       <p class="saludo"></p>

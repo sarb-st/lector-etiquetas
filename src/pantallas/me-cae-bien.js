@@ -4,6 +4,7 @@
 
 import { t } from '../i18n/index.js';
 import { icono } from '../ui/iconos.js';
+import { logoAnimado } from '../ui/logo.js';
 import { esc } from '../ui/comunes.js';
 import { leerPerfil } from '../datos/almacen.js';
 import { leerClave } from './ajustes.js';
@@ -232,7 +233,7 @@ export function pantallaResultadoMcb() {
   if (estado.cargando) {
     return `
       <div class="pantalla procesando">
-        <div class="cargador" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="logo-en-app">${logoAnimado('logo-carga')}</div>
         <h1>${esc(t('meCaeBien.revisando'))}</h1>
       </div>`;
   }

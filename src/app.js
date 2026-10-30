@@ -256,16 +256,26 @@ function despedirBienvenida(primeraVez) {
   if (!bienvenida) return;
   bienvenida.querySelector('.nombre').textContent = t('app.nombre');
   if (primeraVez) {
+    // La primera vez: el logo completo (tetrapack → pera → muffin) y un saludo.
     bienvenida.querySelector('.saludo').textContent = t('bienvenida.saludo');
     bienvenida.classList.add('con-saludo');
+  } else {
+    // Las demás: un guiño corto.
+    bienvenida.classList.add('corta');
   }
   const reducido = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const duracion = reducido ? 400 : primeraVez ? 1600 : 900;
+  const duracion = reducido ? 400 : primeraVez ? 2500 : 1100;
   const falta = Math.max(0, duracion - performance.now());
-  setTimeout(() => {
+  let salio = false;
+  const salir = () => {
+    if (salio) return;
+    salio = true;
     bienvenida.classList.add('saliendo');
     setTimeout(() => bienvenida.remove(), 300);
-  }, falta);
+  };
+  setTimeout(salir, falta);
+  // Un toque la saltea: nunca hace esperar.
+  bienvenida.addEventListener('pointerdown', salir, { once: true });
 }
 
 document.documentElement.lang = idioma();
