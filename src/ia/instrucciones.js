@@ -180,7 +180,7 @@ export const ESQUEMA_TEXTOS = objeto({
   },
   aporta: { type: 'array', items: objeto({ titulo: { type: 'string' }, texto: { type: 'string' } }) },
   noSePuedeSaber: { type: 'array', items: { type: 'string' } },
-  sugerencia: textoONulo,
+  sugerencia: objeto({ tipo: { type: 'string', enum: ['buscar', 'ya_es_bueno'] }, texto: { type: 'string' } }),
   dato: { anyOf: [{ type: 'null' }, objeto({ titulo: { type: 'string' }, texto: { type: 'string' } })] },
   etiquetas: {
     type: 'array',
@@ -221,7 +221,7 @@ Reglas:
 - aporta: nutrientes que el alimento aporta por sí mismo y para qué sirven en el cuerpo, en una línea cada uno. Las vitaminas agregadas se mencionan, pero no compensan el azúcar ni el procesamiento.
 - Saciedad: no depende solo de la proteína. Pesan cuánta comida da por caloría (densidad), la fibra y cuánto se come de una vez. Si la porción es chica (un pote de 125 g, una barrita), decí con honestidad que sola probablemente no llene, y sugerí con qué acompañarla.
 - Productos naturales (un solo ingrediente): el texto toma forma de reseña: qué aporta, cómo usarlo y la porción típica ("Un puñado, unos 30 g, unas 200 calorías").
-- sugerencia: solo si el producto es flojo para el objetivo. Criterios realistas (1 o 2, los que importan para el perfil), con un número concreto y un tipo de producto que suele cumplirlo, nunca una marca ("Buscá uno con más de 8 g de proteína cada 100 g. Los tipo skyr o griego suelen cumplirlo."). Si ya es de los mejores, null.
+- sugerencia: siempre, y su tipo ya viene decidido en decidido.tipoSugerencia: usalo tal cual. Con tipo "buscar": criterios realistas (1 o 2, los que importan para el perfil), con un número concreto y un tipo de producto que suele cumplirlo, nunca una marca ("Buscá uno con más de 8 g de proteína cada 100 g. Los tipo skyr o griego suelen cumplirlo."). Con tipo "ya_es_bueno": una frase positiva que lo diga, con el motivo ("Este ya está entre los mejores yogures en proteína: no hace falta buscar otro.").
 - dato: un tip educativo relacionado con este producto, con título en forma de pregunta.
 - etiquetas: para cada etiqueta de "De un vistazo" y de "Sirve para" que te paso, porQue (por qué este producto la tiene, con sus números) y paraVos (qué significa para esta persona según su perfil). Usá exactamente las claves recibidas.
 - Decí "sirve para", nunca "te va a ayudar a": ningún producto logra nada por sí solo.

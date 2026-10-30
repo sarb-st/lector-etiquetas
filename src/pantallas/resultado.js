@@ -17,6 +17,7 @@ import { leerClave } from './ajustes.js';
 import { reescribirTextos } from '../ia/analisis.js';
 import { porcionDe } from '../puntaje/derivados.js';
 import { partesAzucar, partesGrasa, cucharaditas } from '../puntaje/composicion.js';
+import { tipoSugerencia, mejorasSugeridas } from '../puntaje/sugerencia.js';
 import { htmlRestricciones, nombreRestriccion } from './me-cae-bien.js';
 
 const NIVELES_PROCESAMIENTO = ['natural', 'minimo', 'procesado', 'ultra'];
@@ -200,13 +201,32 @@ function deUnVistazo(resultado) {
     <div class="grupos-chips">${grupos}</div>`;
 }
 
-// Qué buscar en su lugar: cierre de la pantalla principal, solo si hay sugerencia.
-function bloqueSugerencia(textos) {
-  if (!textos.sugerencia) return '';
+// "Qué buscar" armado con las etiquetas del producto, para cuando no hay texto escrito.
+function textoBuscarGenerico(resultado) {
+  const mejoras = mejorasSugeridas(resultado).map((m) => t(`resultado.mejora_${m}`));
+  if (mejoras.length === 0) return t('resultado.buscarSinDatos', { nota: resultado.nota });
+  return t('resultado.buscarGenerico', { mejoras: mejoras.join(t('resultado.y')) });
+}
+
+// Cierre de la pantalla principal: qué buscar en su lugar o, si el producto ya es
+// una buena elección, que lo diga (definición, sección 7.2).
+function bloqueSugerencia(textos, resultado) {
+  // Qué bloque va lo decide la nota: menos de 8, recomendar; 8 o más, felicitar.
+  const tipo = tipoSugerencia(resultado.nota);
+  if (!tipo) return '';
+  let sugerencia = textos.sugerencia;
+  // Análisis viejos: la sugerencia era solo un texto.
+  if (typeof sugerencia === 'string') sugerencia = { tipo: 'buscar', texto: sugerencia };
+  // Si el texto guardado no corresponde al tipo decidido (o falta), se arma uno con los datos.
+  if (!sugerencia?.texto || sugerencia.tipo !== tipo) {
+    sugerencia = { tipo, texto: tipo === 'ya_es_bueno' ? t('resultado.yaEsBuenoGenerico') : textoBuscarGenerico(resultado) };
+  }
+
+  const esBueno = sugerencia.tipo === 'ya_es_bueno';
   return `
-    <section class="bloque-sugerencia">
-      <p class="etiqueta-chica">${icono('lupa', 'sm')}${esc(t('resultado.sugerencia'))}</p>
-      <p class="texto">${esc(textos.sugerencia)}</p>
+    <section class="bloque-sugerencia ${esBueno ? 'ya-es-bueno' : ''}">
+      <p class="etiqueta-chica">${icono(esBueno ? 'tilde' : 'lupa', 'sm')}${esc(t(esBueno ? 'resultado.yaEsBueno' : 'resultado.sugerencia'))}</p>
+      <p class="texto">${esc(sugerencia.texto)}</p>
     </section>`;
 }
 
@@ -372,7 +392,7 @@ function analisisCompleto(resultado, textos, ficha) {
         <span class="fila">
           <span class="titulos">
             <strong id="titulo-analisis">${esc(t('resultado.analisisCompleto'))}</strong>
-            <span class="pista">${esc(t('resultado.deslizaArriba'))}</span>
+            <span class="pista visualmente-oculto">${esc(t('resultado.deslizaArriba'))}</span>
           </span>
           <span class="flecha" aria-hidden="true">${icono('arriba')}</span>
         </span>
@@ -457,6 +477,8 @@ export function montarResultado(raiz) {
   const centinela = raiz.querySelector('.centinela-analisis');
   if (hoja && centinela) {
     activarArrastre(hoja);
+    // Asoma exactamente la pestaña (manija y título), sin dejar ver nada de lo que hay debajo.
+    hoja.style.setProperty('--asomada', `${hoja.querySelector('.pestana-analisis').offsetHeight}px`);
     // La pestaña se asoma cuando el final de la pantalla principal entra en la ventana.
     vigilarFinal = () => {
       if (!document.body.contains(centinela)) {
@@ -510,7 +532,7 @@ export function pantallaResultado(id) {
       ${deUnVistazo(resultado)}
       ${sirvePara(resultado)}
       ${cuando(textos)}
-      ${bloqueSugerencia(textos)}
+      ${bloqueSugerencia(textos, resultado)}
       ${resultado.nota === null ? '' : '<div class="centinela-analisis" aria-hidden="true"></div>'}
     </div>
     ${resultado.nota === null ? '' : analisisCompleto(resultado, textos, entrada.ficha)}`;

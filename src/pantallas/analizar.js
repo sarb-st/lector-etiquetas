@@ -170,9 +170,11 @@ async function usarCodigo(codigo) {
     await correrAnalisis();
     return;
   }
-  // 3. No está o le faltan datos: fotos.
+  // 3. No está o le faltan datos: antes de pedir las fotos, un paso que lo explica
+  //    (sin saltar de golpe del escaneo a la cámara de fotos).
   estado.aviso = encontrado ? 'incompleto' : 'noEncontrado';
-  location.hash = '#/analizar/fotos';
+  estado.paso = 'sinDatos';
+  window.dispatchEvent(new HashChangeEvent('hashchange'));
 }
 
 // ---------- Fotos ----------
@@ -217,9 +219,12 @@ export function pantallaFotos() {
   if (r?.html) return r.html;
   // El frente es opcional: solo cuentan la tabla y los ingredientes.
   const cantidad = ['tabla', 'ingredientes'].filter((k) => estado.fotos[k]).length;
-  const aviso = estado.aviso
-    ? `<div class="aviso-parcial" role="status">${icono('info')}<p class="texto">${esc(t(`analizar.aviso_${estado.aviso}`))}</p></div>`
-    : '';
+  // "No está en la base" ya se explicó en el paso anterior: acá no se repite.
+  const yaExplicado = ['noEncontrado', 'incompleto'].includes(estado.aviso);
+  const aviso =
+    estado.aviso && !yaExplicado
+      ? `<div class="aviso-parcial" role="status">${icono('info')}<p class="texto">${esc(t(`analizar.aviso_${estado.aviso}`))}</p></div>`
+      : '';
   return `
     <div class="pantalla fotos">
       ${barra('#/analizar')}
@@ -256,6 +261,18 @@ export async function recibirFoto(entrada, redibujar) {
 const PASOS = ['buscando', 'leyendo', 'calculando', 'escribiendo'];
 
 export function pantallaProcesando() {
+  // El código se leyó, pero el producto no está completo en la base: se explica y se ofrece seguir con fotos.
+  if (estado.paso === 'sinDatos') {
+    return `
+      <div class="pantalla procesando paso-sin-datos">
+        <div class="logo-en-app">${logoAnimado('logo-quieto')}</div>
+        <p class="codigo-leido">${icono('tilde', 'sm')}${esc(t('analizar.codigoLeido', { codigo: estado.codigo ?? '' }))}</p>
+        <h1>${esc(t(`analizar.sinDatosTitulo_${estado.aviso}`))}</h1>
+        <p class="ayuda-bloque">${esc(t('analizar.sinDatosTexto'))}</p>
+        <a class="boton-principal tocable centrado" href="#/analizar/fotos">${icono('escanear', 'sm')}${esc(t('analizar.sacarLasFotos'))}</a>
+        <a class="boton-pastilla grande tocable centrado" href="#/">${esc(t('analizar.cancelar'))}</a>
+      </div>`;
+  }
   // Claude no está segura del tipo de producto: pregunta antes de analizar.
   if (estado.pregunta) {
     const opciones = estado.pregunta.alternativas

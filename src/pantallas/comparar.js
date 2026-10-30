@@ -97,21 +97,44 @@ function motivo(c, nombres) {
     : t('comparar.motivo_nota', { x: rg.nota, y: ro.nota });
 }
 
+// Tarjeta de un producto en el podio. rol: 'ganador', 'segundo' o 'parejo'.
+// Toda la tarjeta abre el análisis; "cambiar" queda aparte.
+function tarjetaPodio(entrada, lugar, rol, etiqueta = '', textoMotivo = '') {
+  const r = resultadoActual(entrada);
+  return `
+    <section class="podio ${rol}">
+      ${etiqueta ? `<p class="etiqueta-chica">${esc(etiqueta)}</p>` : ''}
+      <div class="fila">
+        ${fotoProducto(entrada, rol === 'ganador' ? 'foto-podio' : 'foto-mini')}
+        <div class="texto">
+          <span class="letra chica" aria-hidden="true">${lugar.toUpperCase()}</span>
+          <a class="nombre" href="#/resultado/${encodeURIComponent(entrada.id)}"
+            aria-label="${esc(t('comparar.verAnalisis', { nombre: entrada.ficha.nombre }))}">${esc(entrada.ficha.nombre)}</a>
+          ${r.linea ? `<span class="detalle linea-${r.linea}">${icono(iconoLinea[r.linea], 'sm')}${esc(t(`lineas.${r.linea}`))}</span>` : ''}
+        </div>
+        <span class="nota-mini ${claseBanda(r.nota, r.provisional)}">${esc(r.nota ?? '–')}</span>
+      </div>
+      ${textoMotivo ? `<p class="motivo">${esc(textoMotivo)}</p>` : ''}
+      <a class="link-flecha tocable" href="#/comparar/elegir/${lugar}">${esc(t('resultado.cambiar'))}</a>
+    </section>`;
+}
+
 function resultadoComparacion(entradaA, entradaB) {
   const c = comparar(entradaA.ficha, entradaB.ficha, leerPerfil());
   const nombres = { a: entradaA.ficha.nombre, b: entradaB.ficha.nombre };
   const ganador = c.ganador === 'a' || c.ganador === 'b' ? c.ganador : null;
 
+  // Podio: el ganador arriba, a todo el ancho y destacado; el otro abajo, más chico.
+  // Si no hay ganador (empate o falta la nota), los dos del mismo tamaño.
+  const entradas = { a: entradaA, b: entradaB };
   const bloque = ganador
-    ? `<section class="bloque-ganador">
-        <p class="etiqueta-chica">${esc(t(c.empateTecnico ? 'comparar.empateTecnico' : 'comparar.paraVos'))}</p>
-        <h2><span class="letra">${ganador.toUpperCase()}</span>${esc(nombres[ganador])}</h2>
-        <p>${esc(motivo(c, nombres))}</p>
-      </section>`
-    : `<section class="bloque-ganador empate">
-        <p class="etiqueta-chica">${esc(t('comparar.empateTecnico'))}</p>
-        <p>${esc(motivo(c, nombres))}</p>
-      </section>`;
+    ? `
+      ${tarjetaPodio(entradas[ganador], ganador, 'ganador', t(c.empateTecnico ? 'comparar.empateTecnico' : 'comparar.paraVos'), motivo(c, nombres))}
+      ${tarjetaPodio(entradas[ganador === 'a' ? 'b' : 'a'], ganador === 'a' ? 'b' : 'a', 'segundo')}`
+    : `
+      <p class="podio-empate"><strong>${esc(t('comparar.empateTecnico'))}</strong> ${esc(motivo(c, nombres))}</p>
+      ${tarjetaPodio(entradaA, 'a', 'parejo')}
+      ${tarjetaPodio(entradaB, 'b', 'parejo')}`;
 
   const avisos = c.avisos
     .map((a) => `<div class="aviso-parcial" role="status">${icono('info')}<p class="texto">${esc(t(`comparar.aviso_${a}`))}</p></div>`)
@@ -163,8 +186,11 @@ export function pantallaComparar() {
   return `
     <div class="pantalla">
       ${barra()}
-      <div class="casillas">${casilla('a')}${casilla('b')}</div>
-      ${a && b ? resultadoComparacion(a, b) : `<p class="ayuda-bloque">${esc(t('comparar.ayuda'))}</p>`}
+      ${
+        a && b
+          ? resultadoComparacion(a, b)
+          : `<div class="casillas">${casilla('a')}${casilla('b')}</div><p class="ayuda-bloque">${esc(t('comparar.ayuda'))}</p>`
+      }
     </div>`;
 }
 

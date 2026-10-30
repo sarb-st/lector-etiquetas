@@ -8,6 +8,7 @@ import { leerPerfil, agregarAlHistorial, buscarEnHistorial } from '../datos/alma
 import { idioma } from '../i18n/index.js';
 import { chequear, restriccionesDelPerfil, textoDeFicha } from './chequeo.js';
 import { miniatura } from '../datos/fotos.js';
+import { tipoSugerencia } from '../puntaje/sugerencia.js';
 
 const NOMBRE_IDIOMA = { es: 'español', en: 'inglés' };
 
@@ -99,6 +100,7 @@ export async function escribirTextos(ficha, resultado, perfil) {
       lineaDeObjetivo: resultado.linea,
       deUnVistazo: resultado.deUnVistazo,
       sirvePara: resultado.sirvePara,
+      tipoSugerencia: tipoSugerencia(resultado.nota),
       porQueEsaNota: resultado.explicacion,
     },
     perfil: perfilParaTextos(perfil),

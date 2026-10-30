@@ -218,6 +218,14 @@ export const LINEA = {
 };
 
 // ---------------------------------------------------------------------------
+// Cierre del resultado: con nota menor a esto, "Qué buscar en su lugar";
+// desde esta nota, "Buena elección". Así, entre dos productos malos, el que gana
+// igual recibe una recomendación.
+// ---------------------------------------------------------------------------
+
+export const SUGERENCIA_NOTA_BUENA = 8;
+
+// ---------------------------------------------------------------------------
 // Sirve para (máximo 2, en este orden)
 // ---------------------------------------------------------------------------
 

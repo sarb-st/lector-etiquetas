@@ -202,7 +202,7 @@ document.addEventListener('keydown', (evento) => {
 document.addEventListener(
   'error',
   (evento) => {
-    if (evento.target?.matches?.('.producto-foto img, .foto-mini img')) evento.target.remove();
+    if (evento.target?.matches?.('.producto-foto img, .foto-mini img, .foto-podio img')) evento.target.remove();
   },
   true,
 );
@@ -264,7 +264,7 @@ function despedirBienvenida(primeraVez) {
     bienvenida.classList.add('corta');
   }
   const reducido = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const duracion = reducido ? 400 : primeraVez ? 2500 : 1100;
+  const duracion = reducido ? 600 : primeraVez ? 4300 : 2000;
   const falta = Math.max(0, duracion - performance.now());
   let salio = false;
   const salir = () => {

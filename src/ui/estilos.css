@@ -2705,47 +2705,51 @@ select.campo-texto {
   }
 }
 
-/* ---- Bienvenida: marco, escaneo y tetrapack → pera → muffin (unos 2 segundos) ---- */
+/* ---- Bienvenida: marco, escaneo y tetrapack → pera → muffin (unos 4 segundos) ---- */
 
 .logo-bienvenida .marco path {
-  animation: logo-dibujar 400ms var(--ease) both;
+  animation: logo-dibujar 600ms var(--ease) both;
 }
 
 .logo-bienvenida .marco > g:nth-child(2) path {
-  animation-delay: 60ms;
+  animation-delay: 100ms;
 }
 
 .logo-bienvenida .marco > g:nth-child(3) path {
-  animation-delay: 120ms;
+  animation-delay: 200ms;
 }
 
 .logo-bienvenida .marco > g:nth-child(4) path {
-  animation-delay: 180ms;
+  animation-delay: 300ms;
 }
 
 .logo-bienvenida .escaneo {
-  animation: logo-escanear 600ms ease-in-out 250ms both;
+  animation: logo-escanear 900ms ease-in-out 400ms both;
 }
 
 .logo-bienvenida .tetrapack path {
   animation:
-    logo-dibujar 350ms ease-in-out 350ms both,
-    logo-borrar 250ms ease-in-out 800ms forwards;
+    logo-dibujar 500ms ease-in-out 600ms both,
+    logo-borrar 350ms ease-in-out 1500ms forwards;
 }
 
 .logo-bienvenida .pera path {
   animation:
-    logo-dibujar 350ms ease-in-out 950ms both,
-    logo-borrar 250ms ease-in-out 1400ms forwards;
+    logo-dibujar 500ms ease-in-out 1700ms both,
+    logo-borrar 350ms ease-in-out 2600ms forwards;
 }
 
 .logo-bienvenida .muffin path {
-  animation: logo-dibujar 350ms ease-in-out 1550ms both;
+  animation: logo-dibujar 500ms ease-in-out 2800ms both;
 }
 
-/* Las veces siguientes, un guiño corto: marco, escaneo y el tetrapack. */
+/* Las veces siguientes, más corta (unos 2 segundos): marco, escaneo y el tetrapack. */
+.bienvenida.corta .logo-bienvenida .marco path {
+  animation-duration: 500ms;
+}
+
 .bienvenida.corta .logo-bienvenida .tetrapack path {
-  animation: logo-dibujar 350ms ease-in-out 300ms both;
+  animation: logo-dibujar 500ms ease-in-out 450ms both;
 }
 
 .bienvenida.corta .logo-bienvenida .pera path,
@@ -2754,8 +2758,8 @@ select.campo-texto {
 }
 
 .bienvenida.corta .logo-bienvenida .escaneo {
-  animation-duration: 500ms;
-  animation-delay: 200ms;
+  animation-duration: 700ms;
+  animation-delay: 300ms;
 }
 
 .bienvenida .nombre {
@@ -2764,11 +2768,11 @@ select.campo-texto {
   font-weight: 800;
   letter-spacing: -0.02em;
   opacity: 0;
-  animation: subir-texto 380ms var(--ease) 1700ms forwards;
+  animation: subir-texto 450ms var(--ease) 3000ms forwards;
 }
 
 .bienvenida.corta .nombre {
-  animation-delay: 400ms;
+  animation-delay: 700ms;
 }
 
 .bienvenida .saludo {
@@ -2778,10 +2782,10 @@ select.campo-texto {
 }
 
 .bienvenida.con-saludo .saludo {
-  animation: subir-texto 380ms var(--ease) 1900ms forwards;
+  animation: subir-texto 450ms var(--ease) 3300ms forwards;
 }
 
-/* ---- Mientras analiza: el ciclo de objetos en bucle, 1,2 s cada uno ---- */
+/* ---- Mientras analiza: siete objetos en bucle, 1,2 s cada uno ---- */
 
 .logo-carga {
   width: 132px;
@@ -2796,8 +2800,9 @@ select.campo-texto {
   animation: logo-escanear 1200ms ease-in-out infinite;
 }
 
+/* El ciclo completo dura 7 × 1,2 s = 8,4 s; cada objeto arranca 1,2 s después del anterior. */
 .logo-carga .objeto path {
-  animation: logo-ciclo 3600ms ease-in-out infinite;
+  animation: logo-ciclo 8400ms ease-in-out infinite;
 }
 
 .logo-carga .pera path {
@@ -2808,18 +2813,34 @@ select.campo-texto {
   animation-delay: 2400ms;
 }
 
-/* Un tercio del ciclo por objeto: se dibuja, se queda y se borra mientras empieza el siguiente. */
+.logo-carga .queso path {
+  animation-delay: 3600ms;
+}
+
+.logo-carga .chocolate path {
+  animation-delay: 4800ms;
+}
+
+.logo-carga .botella path {
+  animation-delay: 6000ms;
+}
+
+.logo-carga .pan path {
+  animation-delay: 7200ms;
+}
+
+/* Un séptimo del ciclo por objeto: se dibuja (0,4 s), se queda y se borra mientras empieza el siguiente. */
 @keyframes logo-ciclo {
   0% {
     stroke-dashoffset: 1;
   }
-  11% {
+  4.8% {
     stroke-dashoffset: 0;
   }
-  29% {
+  11.9% {
     stroke-dashoffset: 0;
   }
-  37% {
+  15.5% {
     stroke-dashoffset: -1.5;
   }
   100% {
@@ -2858,7 +2879,8 @@ select.campo-texto {
 /* ---------- Foto del producto ---------- */
 
 .producto-foto,
-.foto-mini {
+.foto-mini,
+.foto-podio {
   position: relative;
   overflow: hidden;
   flex: none;
@@ -2879,7 +2901,8 @@ select.campo-texto {
 
 /* Las fotos de envases suelen venir sobre blanco: se muestran enteras, sin recortar. */
 .producto-foto img,
-.foto-mini img {
+.foto-mini img,
+.foto-podio img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2971,7 +2994,7 @@ select.campo-texto {
 
 .pantalla-resultado {
   /* Lugar para que la pestaña asomada no tape lo último de la pantalla. */
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
 }
 
 .centinela-analisis {
@@ -2994,7 +3017,7 @@ select.campo-texto {
 }
 
 .hoja-analisis {
-  --asomada: 100px;
+  --asomada: 64px;
   --arrastre: 0px;
   position: fixed;
   left: 0;
@@ -3008,7 +3031,7 @@ select.campo-texto {
   flex-direction: column;
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   background: var(--bg);
-  box-shadow: 0 -8px 30px rgb(0 0 0 / 0.18);
+  box-shadow: 0 -2px 12px rgb(0 0 0 / 0.08);
   transform: translateY(calc(100% + 20px));
   transition: transform 320ms var(--ease);
 }
@@ -3030,9 +3053,9 @@ select.campo-texto {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--s-2);
+  gap: 6px;
   width: 100%;
-  padding: var(--s-3) var(--s-5) var(--s-4);
+  padding: 10px var(--s-5) 10px;
   touch-action: none;
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   background: var(--surface);
@@ -3048,7 +3071,7 @@ select.campo-texto {
 
 .pestana-analisis strong {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -3067,8 +3090,8 @@ select.campo-texto {
 }
 
 .pestana-analisis .flecha {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex: none;
   border-radius: 50%;
   display: grid;
@@ -3289,6 +3312,193 @@ select.campo-texto {
 
 .cuerpo-analisis .caja-punteada {
   background: var(--surface);
+}
+
+/* Cuando el producto ya es una buena elección, el cierre es verde suave en vez de azul. */
+.bloque-sugerencia.ya-es-bueno {
+  background: var(--tint-alto);
+  color: var(--text-alto);
+}
+
+/* ---------- Comparar: podio ---------- */
+
+.podio {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+}
+
+.podio .fila {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.podio .texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.podio .nombre {
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: none;
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+
+/* Toda la tarjeta abre el análisis; "cambiar" queda encima para poder tocarlo. */
+.podio .nombre::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-xl);
+}
+
+.podio .link-flecha {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  min-height: 36px;
+}
+
+.podio .detalle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.podio .etiqueta-chica {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* El ganador: más alto, en cobalto, con foto y nota más grandes. */
+.podio.ganador {
+  padding: var(--s-5);
+  gap: var(--s-3);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.podio.ganador .nombre {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.podio.ganador .nota-mini {
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
+  border-radius: 18px;
+}
+
+.podio.ganador .detalle {
+  background: color-mix(in srgb, var(--on-brand) 92%, transparent);
+  color: var(--brand);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+}
+
+.podio.ganador .motivo {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.podio.ganador .link-flecha {
+  color: var(--on-brand);
+}
+
+.podio.ganador .letra {
+  background: var(--on-brand);
+  color: var(--brand);
+}
+
+.foto-podio {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  font-size: 30px;
+}
+
+.podio-empate {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+}
+
+.podio-empate strong {
+  font-family: var(--font-display);
+}
+
+/* ---------- Paso intermedio: el producto no está en la base ---------- */
+
+/* El logo quieto: marco y tetrapack ya dibujados. */
+.logo-quieto {
+  width: 112px;
+  height: 112px;
+}
+
+.logo-quieto .marco path,
+.logo-quieto .tetrapack path {
+  stroke-dashoffset: 0;
+}
+
+.paso-sin-datos {
+  gap: var(--s-4);
+}
+
+.paso-sin-datos h1 {
+  font-size: 26px;
+  max-width: 18ch;
+}
+
+.paso-sin-datos .ayuda-bloque {
+  max-width: 32ch;
+}
+
+.paso-sin-datos .boton-principal,
+.paso-sin-datos .boton-pastilla {
+  width: 100%;
+  max-width: 340px;
+}
+
+.codigo-leido {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--tint-alto);
+  color: var(--text-alto);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* La pantalla de fotos entra deslizándose, en vez de aparecer de golpe. */
+.pantalla.fotos {
+  animation: entrar-lateral 320ms var(--ease);
+}
+
+@keyframes entrar-lateral {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
 }
 
 /* ---------- Pantalla en construcción ---------- */
