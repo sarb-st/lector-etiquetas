@@ -171,7 +171,12 @@ export const ESQUEMA_TEXTOS = objeto({
   }),
   deDondeViene: {
     type: 'array',
-    items: objeto({ nombre: { type: 'string' }, cantidad: { type: 'string' }, texto: { type: 'string' } }),
+    items: objeto({
+      nutriente: { type: 'string', enum: ['azucar', 'grasas', 'fibra', 'otro'] },
+      nombre: { type: 'string' },
+      cantidad: { type: 'string' },
+      texto: { type: 'string' },
+    }),
   },
   aporta: { type: 'array', items: objeto({ titulo: { type: 'string' }, texto: { type: 'string' } }) },
   noSePuedeSaber: { type: 'array', items: { type: 'string' } },
@@ -212,7 +217,7 @@ Reglas:
 - motivoLinea: una línea que justifica la línea de objetivo para el perfil de la persona.
 - cuandoSi / cuandoNo: una línea cada uno, pensadas para la actividad, el objetivo y los momentos de consumo del perfil. Nunca pueden contradecir la línea de objetivo. Si no hay nada útil que decir, null.
 - resumen: si la nota es 4 o menos, completá maloPorque primero; si es buena, buenoPorque. loRescatable solo si la nota es baja y hay algo bueno. Los campos que no apliquen van en null.
-- deDondeViene: azúcar (propio o agregado), grasas (saturadas, insaturadas ≈ total menos saturadas, y su origen según ingredientes) y fibra (propia o agregada), solo cuando hay datos. cantidad con unidad ("24 g").
+- deDondeViene: azúcar (propio o agregado), grasas (saturadas, insaturadas ≈ total menos saturadas, y su origen según ingredientes) y fibra (propia o agregada), solo cuando hay datos. cantidad con unidad ("24 g"). nutriente: azucar, grasas, fibra u otro, según de qué habla la tarjeta.
 - aporta: nutrientes que el alimento aporta por sí mismo y para qué sirven en el cuerpo, en una línea cada uno. Las vitaminas agregadas se mencionan, pero no compensan el azúcar ni el procesamiento.
 - Saciedad: no depende solo de la proteína. Pesan cuánta comida da por caloría (densidad), la fibra y cuánto se come de una vez. Si la porción es chica (un pote de 125 g, una barrita), decí con honestidad que sola probablemente no llene, y sugerí con qué acompañarla.
 - Productos naturales (un solo ingrediente): el texto toma forma de reseña: qué aporta, cómo usarlo y la porción típica ("Un puñado, unos 30 g, unas 200 calorías").

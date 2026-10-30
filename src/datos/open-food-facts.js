@@ -17,6 +17,8 @@ const CAMPOS = [
   'categories',
   'quantity',
   'serving_size',
+  'image_front_small_url',
+  'image_front_url',
 ].join(',');
 
 const numero = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : typeof v === 'string' && v.trim() !== '' && !Number.isNaN(Number(v)) ? Number(v) : null);
@@ -69,6 +71,8 @@ export async function buscarEnOpenFoodFacts(codigo) {
       categorias: p.categories || '',
       cantidad: p.quantity || '',
       porcion: p.serving_size || '',
+      // Foto del frente, para reconocer el producto en la app.
+      imagen: p.image_front_small_url || p.image_front_url || null,
     },
   };
 }

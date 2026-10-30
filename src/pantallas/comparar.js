@@ -7,7 +7,7 @@ import { t, numero, idioma } from '../i18n/index.js';
 import { leerClave } from './ajustes.js';
 import { datoComparacion } from '../ia/analisis.js';
 import { icono } from '../ui/iconos.js';
-import { esc, claseBanda, iconoLinea, resultadoActual } from '../ui/comunes.js';
+import { esc, claseBanda, iconoLinea, resultadoActual, fotoProducto, filaProducto } from '../ui/comunes.js';
 import { leerPerfil, leerHistorial, buscarEnHistorial } from '../datos/almacen.js';
 import { comparar } from '../puntaje/comparar.js';
 
@@ -70,7 +70,10 @@ function casilla(lugar) {
   return `
     <section class="casilla">
       <span class="letra" aria-hidden="true">${letra}</span>
-      <span class="nota-mini ${claseBanda(r.nota, r.provisional)}">${esc(r.nota ?? '–')}</span>
+      <span class="fila-foto-nota">
+        ${fotoProducto(entrada, 'foto-mini')}
+        <span class="nota-mini ${claseBanda(r.nota, r.provisional)}">${esc(r.nota ?? '–')}</span>
+      </span>
       <a class="nombre" href="#/resultado/${encodeURIComponent(entrada.id)}"
         aria-label="${esc(t('comparar.verAnalisis', { nombre: entrada.ficha.nombre }))}">${esc(entrada.ficha.nombre)}</a>
       ${r.linea ? `<span class="detalle linea-${r.linea}">${icono(iconoLinea[r.linea], 'sm')}${esc(t(`lineas.${r.linea}`))}</span>` : ''}
@@ -169,17 +172,7 @@ export function pantallaElegir(lugar) {
   const otro = casillas[lugar === 'a' ? 'b' : 'a'];
   const filas = leerHistorial()
     .filter((e) => e.id !== otro)
-    .map((e) => {
-      const r = resultadoActual(e);
-      return `
-        <li>
-          <a class="fila-producto tocable" href="#/comparar/${lugar}/${encodeURIComponent(e.id)}">
-            <span class="nota-mini ${claseBanda(r.nota, r.provisional)}">${esc(r.nota ?? '–')}</span>
-            <span class="texto"><span class="nombre">${esc(e.ficha.nombre)}</span></span>
-            ${icono('derecha')}
-          </a>
-        </li>`;
-    })
+    .map((e) => `<li>${filaProducto(e, `#/comparar/${lugar}/${encodeURIComponent(e.id)}`)}</li>`)
     .join('');
   return `
     <div class="pantalla">

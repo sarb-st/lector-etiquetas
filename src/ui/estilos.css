@@ -2701,6 +2701,442 @@ select.campo-texto {
   }
 }
 
+/* ---------- Foto del producto ---------- */
+
+.producto-foto,
+.foto-mini {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--ink-2);
+}
+
+.foto-mini {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  font-size: 22px;
+}
+
+/* Las fotos de envases suelen venir sobre blanco: se muestran enteras, sin recortar. */
+.producto-foto img,
+.foto-mini img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 3px;
+}
+
+.fila-producto .nota-mini {
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+  border-radius: 13px;
+}
+
+.fila-foto-nota {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+/* ---------- De un vistazo en bloques ---------- */
+
+.grupos-chips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.grupo-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.grupo-chips.solo {
+  grid-template-columns: auto;
+  justify-content: start;
+}
+
+.grupo-chips .chip {
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--s-2) var(--s-3);
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: left;
+  border-radius: 16px;
+  align-items: center;
+}
+
+.grupo-chips .chip > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Qué buscar en su lugar ---------- */
+
+.bloque-sugerencia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.bloque-sugerencia .etiqueta-chica {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.bloque-sugerencia .texto {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ---------- Análisis completo: hoja que se asoma ---------- */
+
+.pantalla-resultado {
+  /* Lugar para que la pestaña asomada no tape lo último de la pantalla. */
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+.centinela-analisis {
+  height: 1px;
+}
+
+.velo-analisis {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgb(10 9 7 / 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms var(--ease);
+}
+
+.velo-analisis.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hoja-analisis {
+  --asomada: 100px;
+  --arrastre: 0px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--bg);
+  box-shadow: 0 -8px 30px rgb(0 0 0 / 0.18);
+  transform: translateY(calc(100% + 20px));
+  transition: transform 320ms var(--ease);
+}
+
+.hoja-analisis[data-estado='asomada'] {
+  transform: translateY(calc(100% - var(--asomada) - env(safe-area-inset-bottom) + var(--arrastre)));
+}
+
+.hoja-analisis[data-estado='abierta'] {
+  transform: translateY(var(--arrastre));
+}
+
+.hoja-analisis.arrastrando {
+  transition: none;
+}
+
+.pestana-analisis {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s-2);
+  width: 100%;
+  padding: var(--s-3) var(--s-5) var(--s-4);
+  touch-action: none;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.pestana-analisis .fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.pestana-analisis strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pestana-analisis .titulos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.pestana-analisis .pista {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.pestana-analisis .flecha {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--brand-tint);
+  color: var(--on-brand-tint);
+  transition: transform 260ms var(--ease);
+}
+
+/* Abierta, la flecha apunta hacia abajo: cerrar. */
+.hoja-analisis[data-estado='abierta'] .flecha {
+  transform: rotate(180deg);
+}
+
+.cuerpo-analisis {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-4) calc(env(safe-area-inset-bottom) + var(--s-6));
+}
+
+.tarjeta-analisis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.titulo-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.titulo-tarjeta .icono {
+  color: var(--brand);
+}
+
+.bloques-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.bloque-resumen {
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.bloque-resumen .rotulo {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.bloque-resumen.malo {
+  background: var(--tint-bajo);
+  color: var(--text-bajo);
+}
+
+.bloque-resumen.exceso .rotulo {
+  color: var(--text-bajo);
+}
+
+.bloque-resumen.bajo .rotulo {
+  color: var(--text-medio);
+}
+
+.bloque-resumen.bueno {
+  background: var(--tint-alto);
+  color: var(--text-alto);
+}
+
+.grilla-origen {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.mini-origen {
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.mini-origen .rotulo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.mini-origen .cantidad {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 2px 0 var(--s-1);
+}
+
+/* Barra dividida en dos tonos de azul, con las palabras debajo de cada parte. */
+.barra-composicion {
+  margin: var(--s-2) 0 var(--s-2);
+}
+
+.pista-barra {
+  display: flex;
+  gap: 3px;
+  height: 12px;
+}
+
+.pista-barra .tramo {
+  min-width: 6px;
+  border-radius: 6px;
+}
+
+.tramo.fuerte {
+  background: var(--brand);
+}
+
+.tramo.suave {
+  background: color-mix(in srgb, var(--brand) 28%, var(--surface));
+}
+
+.rotulos-barra {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rotulos-barra .fuerte {
+  color: var(--brand);
+}
+
+.rotulos-barra .suave {
+  color: var(--ink-2);
+  text-align: right;
+}
+
+.rotulos-barra.uno .suave {
+  text-align: left;
+}
+
+.nota-estimado,
+.sin-barra {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: var(--s-2);
+}
+
+.sin-barra {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  border: 1.5px dashed var(--line);
+}
+
+/* Cucharaditas: un ícono y el número grande, en vez de dibujar una cucharita por cada una. */
+.cucharaditas {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-1) 0 var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  width: fit-content;
+}
+
+.cucharaditas .icono {
+  color: var(--brand);
+  width: 28px;
+  height: 28px;
+}
+
+.cucharaditas strong {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.cucharaditas span {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+.lista-aporta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.lista-aporta li {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--tint-alto);
+  color: var(--text-alto);
+}
+
+.cuerpo-analisis .caja-punteada {
+  background: var(--surface);
+}
+
 /* ---------- Pantalla en construcción ---------- */
 
 .en-construccion {

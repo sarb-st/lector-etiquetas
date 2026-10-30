@@ -9,6 +9,8 @@ import {
   pantallaResultado,
   contenidoHojaEtiqueta,
   contenidoHojaCambiarTipo,
+  montarResultado,
+  alternarAnalisis,
   enviarCambioTipo,
   enviarEnvase,
 } from './pantallas/resultado.js';
@@ -61,7 +63,12 @@ function enConstruccion(titulo) {
 // Cada ruta: qué pantalla dibuja y qué pestaña queda marcada (null = sin barra).
 const rutas = [
   { patron: /^\/?$/, tab: 'inicio', dibujar: () => pantallaInicio() },
-  { patron: /^\/resultado\/(.+)$/, tab: null, dibujar: (m) => pantallaResultado(decodeURIComponent(m[1])) },
+  {
+    patron: /^\/resultado\/(.+)$/,
+    tab: null,
+    dibujar: (m) => pantallaResultado(decodeURIComponent(m[1])),
+    montar: montarResultado,
+  },
   { patron: /^\/mis-productos$/, tab: 'misProductos', dibujar: () => pantallaMisProductos() },
   { patron: /^\/guia$/, tab: 'guia', dibujar: () => enConstruccion(t('tabs.guia')) },
   { patron: /^\/perfil$/, tab: 'perfil', dibujar: () => pantallaPerfil() },
@@ -113,6 +120,8 @@ function dibujarTabbar(activa) {
 }
 
 function navegar({ mantenerScroll = false } = {}) {
+  // Por si se sale con el análisis completo abierto.
+  document.body.style.overflow = '';
   const ruta = location.hash.replace(/^#/, '') || '/';
 
   // La primera vez: las preguntas mínimas antes de empezar.
@@ -159,7 +168,11 @@ document.addEventListener('click', async (evento) => {
     return;
   }
 
-  if (accion === 'agregar-foto' || accion === 'no-coinciden') {
+  if (accion === 'alternar-analisis') {
+    alternarAnalisis();
+  } else if (accion === 'cerrar-analisis') {
+    alternarAnalisis(false);
+  } else if (accion === 'agregar-foto' || accion === 'no-coinciden') {
     const entrada = buscarEnHistorial(raiz.querySelector('[data-id]')?.dataset.id);
     if (entrada) empezarReescaneo(entrada);
   } else if (accion === 'quitar-producto') {
@@ -179,6 +192,20 @@ document.addEventListener('click', async (evento) => {
     hoja.close();
   }
 });
+
+// Escape cierra el análisis completo.
+document.addEventListener('keydown', (evento) => {
+  if (evento.key === 'Escape' && document.querySelector('.hoja-analisis[data-estado="abierta"]')) alternarAnalisis(false);
+});
+
+// Si la foto de un producto no carga (por ejemplo, sin internet), queda la inicial.
+document.addEventListener(
+  'error',
+  (evento) => {
+    if (evento.target?.matches?.('.producto-foto img, .foto-mini img')) evento.target.remove();
+  },
+  true,
+);
 
 document.addEventListener('input', (evento) => {
   if (evento.target.matches('.preguntas [data-campo]')) entradaPreguntas(evento.target);

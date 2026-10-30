@@ -19,6 +19,24 @@ function cargarImagen(archivo) {
   });
 }
 
+// Miniatura cuadrada (recortada al centro) para mostrar el producto en las listas.
+// Es chica a propósito: queda guardada en el teléfono junto con el historial.
+export async function miniatura(dataUrl, lado = 160) {
+  const imagen = await new Promise((resolver, rechazar) => {
+    const i = new Image();
+    i.onload = () => resolver(i);
+    i.onerror = rechazar;
+    i.src = dataUrl;
+  });
+  const corte = Math.min(imagen.naturalWidth, imagen.naturalHeight);
+  const lienzo = document.createElement('canvas');
+  lienzo.width = lienzo.height = lado;
+  lienzo
+    .getContext('2d')
+    .drawImage(imagen, (imagen.naturalWidth - corte) / 2, (imagen.naturalHeight - corte) / 2, corte, corte, 0, 0, lado, lado);
+  return lienzo.toDataURL('image/jpeg', 0.8);
+}
+
 // Devuelve { base64, tipo, vistaPrevia } con la foto en JPEG de hasta 1500 px de lado.
 export async function prepararFoto(archivo) {
   const imagen = await cargarImagen(archivo);

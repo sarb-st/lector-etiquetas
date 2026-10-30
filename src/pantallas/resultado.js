@@ -8,12 +8,15 @@ import {
   iconoSirvePara,
   textosEnIdioma,
   resultadoActual,
+  fotoProducto,
 } from '../ui/comunes.js';
+import { buscarEnOpenFoodFacts } from '../datos/open-food-facts.js';
 import { buscarEnHistorial, actualizarFicha, actualizarEntrada } from '../datos/almacen.js';
 import { CATEGORIAS } from '../puntaje/reglas.js';
 import { leerClave } from './ajustes.js';
 import { reescribirTextos } from '../ia/analisis.js';
 import { porcionDe } from '../puntaje/derivados.js';
+import { partesAzucar, partesGrasa, cucharaditas } from '../puntaje/composicion.js';
 import { htmlRestricciones, nombreRestriccion } from './me-cae-bien.js';
 
 const NIVELES_PROCESAMIENTO = ['natural', 'minimo', 'procesado', 'ultra'];
@@ -23,19 +26,17 @@ function cabecera(entrada, textos) {
   const { ficha } = entrada;
   const n = ficha.nutrientes;
   const unidad = ficha.esBebida ? t('resultado.por100ml') : t('resultado.por100g');
-  const inicial = ficha.nombre?.trim()?.[0] ?? '?';
   const detectado = textos.detectado || ficha.tipoDetectado;
   return `
     <div class="producto-cabecera">
-      <span class="producto-foto" aria-hidden="true">${esc(inicial)}</span>
+      ${fotoProducto(entrada)}
       <div>
         <h1>${esc(ficha.nombre)}</h1>
         ${detectado ? `<p class="meta">${esc(t('resultado.detecte'))} ${esc(detectado)} · <button type="button" data-accion="cambiar-tipo">${esc(t('resultado.cambiar'))}</button></p>` : ''}
         ${n?.kcal != null ? `<p class="meta">${esc(unidad)} · ${esc(numero(n.kcal, 0))} ${esc(t('resultado.kcal'))}</p>` : ''}
       </div>
     </div>
-    ${marcaFuente(entrada)}
-    ${bloqueEnvase(entrada)}`;
+    ${marcaFuente(entrada)}`;
 }
 
 // Si los datos vienen de Open Food Facts, se dice y se ofrece confirmarlos con fotos.
@@ -181,19 +182,32 @@ function textoChip(chip) {
   return t(`chips.${chip.clave}`, { v: chip.valor == null ? '' : numero(chip.valor) });
 }
 
+// Etiquetas en tres bloques (excesos, puntos flojos, puntos buenos), dos por renglón.
+// Un bloque sin etiquetas no aparece.
 function deUnVistazo(resultado) {
   if (resultado.deUnVistazo.length === 0) return '';
-  const chips = resultado.deUnVistazo
-    .map(
-      (chip) => `
-      <button type="button" class="chip ${chip.tipo} tocable" data-accion="abrir-etiqueta" data-clave="${esc(chip.clave)}" data-tipo="${esc(chip.tipo)}">
-        ${icono(ICONO_CHIP[chip.tipo], 'sm')}${esc(textoChip(chip))}
-      </button>`,
-    )
+  const boton = (chip) => `
+    <button type="button" class="chip ${chip.tipo} tocable" data-accion="abrir-etiqueta" data-clave="${esc(chip.clave)}" data-tipo="${esc(chip.tipo)}">
+      ${icono(ICONO_CHIP[chip.tipo], 'sm')}<span>${esc(textoChip(chip))}</span>
+    </button>`;
+  const grupos = ['exceso', 'flojo', 'bueno']
+    .map((tipo) => resultado.deUnVistazo.filter((c) => c.tipo === tipo))
+    .filter((grupo) => grupo.length > 0)
+    .map((grupo) => `<div class="grupo-chips ${grupo.length === 1 ? 'solo' : ''}">${grupo.map(boton).join('')}</div>`)
     .join('');
   return `
     <h2 class="titulo-seccion"><span>${esc(t('resultado.deUnVistazo'))}</span><span>${esc(t('resultado.tocaParaSaber'))}</span></h2>
-    <div class="chips">${chips}</div>`;
+    <div class="grupos-chips">${grupos}</div>`;
+}
+
+// Qué buscar en su lugar: cierre de la pantalla principal, solo si hay sugerencia.
+function bloqueSugerencia(textos) {
+  if (!textos.sugerencia) return '';
+  return `
+    <section class="bloque-sugerencia">
+      <p class="etiqueta-chica">${icono('lupa', 'sm')}${esc(t('resultado.sugerencia'))}</p>
+      <p class="texto">${esc(textos.sugerencia)}</p>
+    </section>`;
 }
 
 function sirvePara(resultado) {
@@ -224,54 +238,252 @@ function cuando(textos) {
     </div>`;
 }
 
-function analisisCompleto(resultado, textos) {
+// Una tarjeta del análisis completo, con ícono y título.
+function tarjetaAnalisis(iconoNombre, titulo, contenido) {
+  return `
+    <section class="tarjeta-analisis">
+      <h3 class="titulo-tarjeta">${icono(iconoNombre, 'sm')}${esc(titulo)}</h3>
+      ${contenido}
+    </section>`;
+}
+
+// De qué nutriente habla cada tarjeta de "De dónde viene". Los análisis nuevos lo
+// traen marcado; en los viejos se deduce del nombre.
+function tipoNutriente(o) {
+  if (o.nutriente && o.nutriente !== 'otro') return o.nutriente;
+  const nombre = (o.nombre ?? '').toLowerCase();
+  if (/az[uú]car|sugar/.test(nombre)) return 'azucar';
+  if (/gras|fat/.test(nombre)) return 'grasas';
+  if (/fibr/.test(nombre)) return 'fibra';
+  return 'otro';
+}
+
+// Barra dividida en dos tonos de azul, con las palabras debajo de cada parte (sin leyendas).
+function barraComposicion(partes, descripcion) {
+  const visibles = partes.filter((p) => p.valor > 0);
+  const tramos = visibles.map((p) => `<span class="tramo ${p.tono}" style="flex-grow: ${p.valor}"></span>`).join('');
+  const rotulos = visibles.map((p) => `<span class="${p.tono}">${esc(p.texto)}</span>`).join('');
+  return `
+    <div class="barra-composicion" role="img" aria-label="${esc(descripcion)}">
+      <div class="pista-barra" aria-hidden="true">${tramos}</div>
+      <div class="rotulos-barra ${visibles.length === 1 ? 'uno' : ''}" aria-hidden="true">${rotulos}</div>
+    </div>`;
+}
+
+function detalleAzucar(ficha) {
+  const a = partesAzucar(ficha);
+  let html = '';
+  if (a?.desconocido) {
+    html += `<p class="sin-barra">${esc(t(`composicion.${a.desconocido}`))}</p>`;
+  } else if (a) {
+    const partes =
+      a.agregado === 0
+        ? [{ valor: a.propio, tono: 'suave', texto: t('composicion.todoPropio') }]
+        : a.propio === 0
+          ? [{ valor: a.agregado, tono: 'fuerte', texto: t('composicion.todoAgregado') }]
+          : [
+              { valor: a.agregado, tono: 'fuerte', texto: t('composicion.agregado', { v: numero(a.agregado, 0) }) },
+              { valor: a.propio, tono: 'suave', texto: t('composicion.propio', { v: numero(a.propio, 0) }) },
+            ];
+    html += barraComposicion(partes, partes.map((p) => p.texto).join(', '));
+    if (a.estimado) html += `<p class="nota-estimado">${esc(t('composicion.estimado'))}</p>`;
+  }
+  const c = cucharaditas(ficha);
+  if (c) {
+    const unidad = t(c.cantidad === 1 ? 'composicion.cucharadita' : 'composicion.cucharaditas');
+    html += `
+      <p class="cucharaditas">
+        ${icono('cuchara')}
+        <strong>≈ ${esc(c.cantidad)}</strong>
+        <span>${esc(unidad)}<br />${esc(t(`composicion.en_${c.en}`, { v: numero(c.porcionGramos ?? 0, 0) }))}</span>
+      </p>`;
+  }
+  return html;
+}
+
+function detalleGrasas(ficha) {
+  const g = partesGrasa(ficha);
+  if (!g) return '';
+  const partes = [
+    { valor: g.saturadas, tono: 'fuerte', texto: t('composicion.saturadas', { v: numero(g.saturadas) }) },
+    { valor: g.insaturadas, tono: 'suave', texto: t('composicion.insaturadas', { v: numero(g.insaturadas) }) },
+  ];
+  return barraComposicion(partes, partes.map((p) => p.texto).join(', '));
+}
+
+// Análisis completo: una hoja que se asoma abajo al llegar al final y se abre hacia arriba.
+function analisisCompleto(resultado, textos, ficha) {
   const r = textos.resumen ?? {};
-  const filaResumen = (clase, rotulo, texto) =>
-    texto ? `<dt class="${clase}">${esc(rotulo)}</dt><dd>${esc(texto)}</dd>` : '';
+  const bloque = (clase, rotulo, texto) =>
+    texto ? `<div class="bloque-resumen ${clase}"><p class="rotulo">${esc(rotulo)}</p><p>${esc(texto)}</p></div>` : '';
   // Si la nota es baja, lo malo va primero; si es buena, lo bueno.
-  const malo = filaResumen('malo', t('resultado.maloPorque'), r.maloPorque);
-  const bueno = filaResumen('bueno', t('resultado.buenoPorque'), r.buenoPorque);
-  const filas = [
+  const malo = bloque('malo', t('resultado.maloPorque'), r.maloPorque);
+  const bueno = bloque('bueno', t('resultado.buenoPorque'), r.buenoPorque);
+  const resumen = [
     ...(resultado.nota <= 4 ? [malo, bueno] : [bueno, malo]),
-    filaResumen('', t('resultado.excesoDe'), r.excesoDe),
-    filaResumen('', t('resultado.bajoEn'), r.bajoEn),
-    filaResumen('bueno', t('resultado.loRescatable'), r.loRescatable),
+    bloque('exceso', t('resultado.excesoDe'), r.excesoDe),
+    bloque('bajo', t('resultado.bajoEn'), r.bajoEn),
+    bloque('bueno', t('resultado.loRescatable'), r.loRescatable),
   ].join('');
 
   const origen = (textos.deDondeViene ?? [])
-    .map(
-      (o) => `<div><p class="fila"><span>${esc(o.nombre)}</span><span>${esc(o.cantidad)}</span></p><p>${esc(o.texto)}</p></div>`,
-    )
+    .map((o) => {
+      const tipo = tipoNutriente(o);
+      const extra = tipo === 'azucar' ? detalleAzucar(ficha) : tipo === 'grasas' ? detalleGrasas(ficha) : '';
+      return `
+      <div class="mini-origen">
+        <p class="rotulo">${esc(o.nombre)}</p>
+        <p class="cantidad">${esc(o.cantidad)}</p>
+        ${extra}
+        <p>${esc(o.texto)}</p>
+      </div>`;
+    })
     .join('');
 
-  const aporta = (textos.aporta ?? []).map((a) => `<p><strong>${esc(a.titulo)}:</strong> ${esc(a.texto)}</p>`).join('');
+  const aporta = (textos.aporta ?? [])
+    .map((a) => `<li><strong>${esc(a.titulo)}</strong><span>${esc(a.texto)}</span></li>`)
+    .join('');
 
   const noSe = textos.noSePuedeSaber ?? [];
 
-  return `
-    <section class="analisis" aria-labelledby="titulo-analisis">
-      <div class="manija" aria-hidden="true"></div>
-      <div class="encabezado">
-        <h2 id="titulo-analisis">${esc(t('resultado.analisisCompleto'))}</h2>
-        <span class="nota-mini ${claseBanda(resultado.nota, resultado.provisional)}" aria-hidden="true">${esc(resultado.nota)}</span>
-      </div>
+  const cuerpo = `
+    ${resumen ? tarjetaAnalisis('portapapeles', t('resultado.resumen'), `<div class="bloques-resumen">${resumen}</div>`) : ''}
+    ${origen ? tarjetaAnalisis('capas', t('resultado.deDondeViene'), `<div class="grilla-origen">${origen}</div>`) : ''}
+    ${aporta ? tarjetaAnalisis('hojaVerde', t('resultado.loQueAporta'), `<ul class="lista-aporta">${aporta}</ul>`) : ''}
+    ${
+      noSe.length > 0
+        ? `<div class="caja-punteada">${icono('pregunta')}<div><strong>${esc(t('resultado.noSePuedeSaber'))}</strong><ul>${noSe.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div>`
+        : ''
+    }
+    ${
+      textos.dato
+        ? `<div class="caja-dato"><p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p><h3>${esc(textos.dato.titulo)}</h3><p>${esc(textos.dato.texto)}</p></div>`
+        : ''
+    }
+    <button type="button" class="boton-secundario tocable" data-accion="no-coinciden">${icono('bandera', 'sm')}${esc(t('resultado.noCoinciden'))}</button>`;
 
-      ${filas ? `<div><h3 class="titulo-seccion">${esc(t('resultado.resumen'))}</h3><dl class="resumen">${filas}</dl></div>` : ''}
-      ${origen ? `<div><h3 class="titulo-seccion">${esc(t('resultado.deDondeViene'))}</h3><div class="origen">${origen}</div></div>` : ''}
-      ${aporta ? `<div><h3 class="titulo-seccion">${esc(t('resultado.loQueAporta'))}</h3>${aporta}</div>` : ''}
-      ${
-        noSe.length > 0
-          ? `<div class="caja-punteada">${icono('pregunta')}<div><strong>${esc(t('resultado.noSePuedeSaber'))}</strong><ul>${noSe.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div>`
-          : ''
-      }
-      ${textos.sugerencia ? `<div class="caja-sugerencia"><strong>${esc(t('resultado.sugerencia'))}</strong><p>${esc(textos.sugerencia)}</p></div>` : ''}
-      ${
-        textos.dato
-          ? `<div class="caja-dato"><p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p><h3>${esc(textos.dato.titulo)}</h3><p>${esc(textos.dato.texto)}</p></div>`
-          : ''
-      }
-      <button type="button" class="boton-secundario tocable" data-accion="no-coinciden">${icono('bandera', 'sm')}${esc(t('resultado.noCoinciden'))}</button>
+  // Va fuera de la pantalla (no dentro de ella) para que quede fija a la ventana
+  // aunque la pantalla esté haciendo su animación de entrada.
+  return `
+    <div class="velo-analisis" data-accion="cerrar-analisis" aria-hidden="true"></div>
+    <section class="hoja-analisis" data-estado="oculta" aria-labelledby="titulo-analisis">
+      <button type="button" class="pestana-analisis" data-accion="alternar-analisis" aria-expanded="false" aria-controls="cuerpo-analisis">
+        <span class="manija" aria-hidden="true"></span>
+        <span class="fila">
+          <span class="titulos">
+            <strong id="titulo-analisis">${esc(t('resultado.analisisCompleto'))}</strong>
+            <span class="pista">${esc(t('resultado.deslizaArriba'))}</span>
+          </span>
+          <span class="flecha" aria-hidden="true">${icono('arriba')}</span>
+        </span>
+      </button>
+      <div class="cuerpo-analisis" id="cuerpo-analisis">${cuerpo}</div>
     </section>`;
+}
+
+// ---------- Comportamiento de la hoja del análisis completo ----------
+
+let vigilarFinal = null;
+
+function estadoHoja(hoja, estado) {
+  hoja.dataset.estado = estado;
+  const abierta = estado === 'abierta';
+  hoja.querySelector('.pestana-analisis').setAttribute('aria-expanded', String(abierta));
+  hoja.querySelector('.pista').hidden = abierta;
+  document.querySelector('.velo-analisis')?.classList.toggle('visible', abierta);
+  document.body.style.overflow = abierta ? 'hidden' : '';
+  if (abierta) hoja.querySelector('.cuerpo-analisis').scrollTop = 0;
+}
+
+export function alternarAnalisis(abrir) {
+  const hoja = document.querySelector('.hoja-analisis');
+  if (!hoja) return;
+  const abierta = hoja.dataset.estado === 'abierta';
+  const quiereAbrir = abrir ?? !abierta;
+  // Al cerrar vuelve a quedar asomada (se está al final de la pantalla).
+  estadoHoja(hoja, quiereAbrir ? 'abierta' : 'asomada');
+}
+
+// Arrastrar la pestaña: hacia arriba abre, hacia abajo cierra. Un toque también alterna.
+function activarArrastre(hoja) {
+  const pestana = hoja.querySelector('.pestana-analisis');
+  let inicioY = null;
+  let movio = false;
+  pestana.addEventListener('pointerdown', (e) => {
+    inicioY = e.clientY;
+    movio = false;
+    hoja.classList.add('arrastrando');
+    pestana.setPointerCapture(e.pointerId);
+  });
+  pestana.addEventListener('pointermove', (e) => {
+    if (inicioY === null) return;
+    const dy = e.clientY - inicioY;
+    if (Math.abs(dy) > 6) movio = true;
+    const abierta = hoja.dataset.estado === 'abierta';
+    // Sigue al dedo, sin pasarse de abierta ni de asomada.
+    const desplazamiento = abierta ? Math.max(0, dy) : Math.min(0, dy);
+    hoja.style.setProperty('--arrastre', `${desplazamiento}px`);
+  });
+  const soltar = (e) => {
+    if (inicioY === null) return;
+    const dy = e.clientY - inicioY;
+    inicioY = null;
+    hoja.classList.remove('arrastrando');
+    hoja.style.removeProperty('--arrastre');
+    if (!movio) return; // fue un toque: lo maneja el clic
+    if (dy < -50) estadoHoja(hoja, 'abierta');
+    else if (dy > 50) estadoHoja(hoja, 'asomada');
+  };
+  pestana.addEventListener('pointerup', soltar);
+  pestana.addEventListener('pointercancel', soltar);
+  // Si se arrastró, no se cuenta además como toque.
+  pestana.addEventListener(
+    'click',
+    (e) => {
+      if (movio) {
+        e.stopPropagation();
+        movio = false;
+      }
+    },
+    true,
+  );
+}
+
+// Se llama después de dibujar el resultado.
+export function montarResultado(raiz) {
+  if (vigilarFinal) window.removeEventListener('scroll', vigilarFinal);
+  document.body.style.overflow = '';
+  const hoja = raiz.querySelector('.hoja-analisis');
+  const centinela = raiz.querySelector('.centinela-analisis');
+  if (hoja && centinela) {
+    activarArrastre(hoja);
+    // La pestaña se asoma cuando el final de la pantalla principal entra en la ventana.
+    vigilarFinal = () => {
+      if (!document.body.contains(centinela)) {
+        window.removeEventListener('scroll', vigilarFinal);
+        return;
+      }
+      if (hoja.dataset.estado === 'abierta') return;
+      const llego = centinela.getBoundingClientRect().top < window.innerHeight;
+      const quiere = llego ? 'asomada' : 'oculta';
+      if (hoja.dataset.estado !== quiere) estadoHoja(hoja, quiere);
+    };
+    window.addEventListener('scroll', vigilarFinal, { passive: true });
+    vigilarFinal();
+  }
+  completarFoto(raiz);
+}
+
+// Productos de Open Food Facts analizados antes de que la app guardara la foto: se busca una vez.
+async function completarFoto(raiz) {
+  const id = raiz.querySelector('[data-id]')?.dataset.id;
+  const entrada = id ? buscarEnHistorial(id) : null;
+  if (!entrada?.codigo || entrada.imagen || entrada.imagenBuscada) return;
+  const encontrado = await buscarEnOpenFoodFacts(entrada.codigo).catch(() => null);
+  const imagen = encontrado?.datos.imagen ?? null;
+  actualizarEntrada(id, { imagen, imagenBuscada: true });
+  const caja = imagen && raiz.querySelector('.producto-cabecera .producto-foto');
+  if (caja && raiz.contains(caja)) caja.outerHTML = fotoProducto({ ...entrada, imagen });
 }
 
 export function pantallaResultado(id) {
@@ -283,7 +495,7 @@ export function pantallaResultado(id) {
   const textos = textosEnIdioma(entrada.textos, idioma());
 
   return `
-    <div class="pantalla" data-id="${esc(entrada.id)}">
+    <div class="pantalla pantalla-resultado" data-id="${esc(entrada.id)}">
       <header class="barra-superior">
         <a class="boton-redondo tocable" href="#/" aria-label="${esc(t('resultado.volver'))}">${icono('atras')}</a>
         <a class="boton-pastilla tocable" href="#/comparar/a/${encodeURIComponent(entrada.id)}">${icono('balanza', 'sm')}${esc(t('resultado.comparar'))}</a>
@@ -294,11 +506,14 @@ export function pantallaResultado(id) {
       ${bloqueNota(resultado)}
       ${textos.titular ? `<p class="titular">${esc(textos.titular)}</p>` : ''}
       ${bloqueLinea(resultado, textos)}
+      ${bloqueEnvase(entrada)}
       ${deUnVistazo(resultado)}
       ${sirvePara(resultado)}
       ${cuando(textos)}
-      ${resultado.nota === null ? '' : analisisCompleto(resultado, textos)}
-    </div>`;
+      ${bloqueSugerencia(textos)}
+      ${resultado.nota === null ? '' : '<div class="centinela-analisis" aria-hidden="true"></div>'}
+    </div>
+    ${resultado.nota === null ? '' : analisisCompleto(resultado, textos, entrada.ficha)}`;
 }
 
 // Hoja para corregir el tipo de producto detectado ("Detecté: … · cambiar").

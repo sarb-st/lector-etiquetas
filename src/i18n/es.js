@@ -90,6 +90,7 @@ export default {
     cuandoSi: 'Cuándo sí',
     cuandoNo: 'Cuándo no',
     analisisCompleto: 'Análisis completo',
+    deslizaArriba: 'Deslizá hacia arriba',
     resumen: 'Resumen',
     maloPorque: 'Malo porque',
     excesoDe: 'Exceso de',
@@ -412,6 +413,23 @@ export default {
     seguridadTitulo: 'Tu clave queda solo en este teléfono',
     seguridad: 'La app no tiene servidor: la clave se guarda en tu teléfono y se usa solo para hablar con Claude. Nadie más la ve, tampoco quien hizo la app.',
     listo: 'Ya tengo mi clave: ir a Ajustes',
+  },
+
+  composicion: {
+    agregado: '≈ {v} g agregado',
+    propio: '{v} g propio',
+    todoPropio: 'Todo propio del alimento',
+    todoAgregado: 'Casi todo agregado',
+    estimado: 'Lo agregado es una estimación: la etiqueta solo dice el total.',
+    sin_estimacion: 'Tiene azúcar agregado, pero la etiqueta no permite saber cuánto.',
+    sin_ingredientes: 'Sin la lista de ingredientes no se sabe si tiene azúcar agregado.',
+    saturadas: '{v} g saturadas',
+    insaturadas: '{v} g insaturadas',
+    cucharadita: 'cucharadita de azúcar',
+    cucharaditas: 'cucharaditas de azúcar',
+    en_cien: 'en 100 g',
+    en_envase: 'en todo el envase ({v} g)',
+    en_tipica: 'en una porción típica ({v} g)',
   },
 
   misProductos: {

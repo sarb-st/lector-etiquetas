@@ -4,9 +4,10 @@ import { pedirJSON } from './cliente.js';
 import { ESQUEMA_FICHA, SISTEMA_LECTURA, ESQUEMA_TEXTOS, sistemaTextos } from './instrucciones.js';
 import { analizar } from '../puntaje/index.js';
 import { normalizarPerfil } from '../puntaje/objetivo.js';
-import { leerPerfil, agregarAlHistorial } from '../datos/almacen.js';
+import { leerPerfil, agregarAlHistorial, buscarEnHistorial } from '../datos/almacen.js';
 import { idioma } from '../i18n/index.js';
 import { chequear, restriccionesDelPerfil, textoDeFicha } from './chequeo.js';
+import { miniatura } from '../datos/fotos.js';
 
 const NOMBRE_IDIOMA = { es: 'español', en: 'inglés' };
 
@@ -148,11 +149,19 @@ export async function analizarProducto({ fotos, off, codigo, fuente, id, fichaEl
       : null,
   ]);
 
+  // Foto chiquita para reconocer el producto: la del frente de Open Food Facts,
+  // o una miniatura de la foto del frente que sacó la persona.
+  let imagen = off?.imagen ?? null;
+  if (fotos?.frente?.vistaPrevia) imagen = await miniatura(fotos.frente.vistaPrevia).catch(() => imagen);
+  // Al corregir un producto sin foto nueva, se conserva la que ya tenía.
+  if (!imagen && id) imagen = buscarEnHistorial(id)?.imagen ?? null;
+
   const entrada = {
     id: id ?? (codigo ? `codigo-${codigo}` : `foto-${Date.now()}`),
     codigo: codigo ?? null,
     fecha: new Date().toISOString(),
     fuente,
+    imagen,
     ficha,
     resultado,
     textos: { [idioma()]: textos },

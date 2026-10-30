@@ -89,6 +89,7 @@ export default {
     cuandoSi: 'When yes',
     cuandoNo: 'When not',
     analisisCompleto: 'Full analysis',
+    deslizaArriba: 'Swipe up',
     resumen: 'Summary',
     maloPorque: 'Bad because',
     excesoDe: 'Too much',
@@ -408,6 +409,23 @@ export default {
     seguridadTitulo: 'Your key stays only on this phone',
     seguridad: 'The app has no server: the key is stored on your phone and used only to talk to Claude. Nobody else sees it, not even whoever made the app.',
     listo: 'I have my key: go to Settings',
+  },
+
+  composicion: {
+    agregado: '≈ {v} g added',
+    propio: '{v} g natural',
+    todoPropio: 'All naturally present',
+    todoAgregado: 'Almost all added',
+    estimado: 'The added part is an estimate: the label only gives the total.',
+    sin_estimacion: 'It has added sugar, but the label doesn’t tell how much.',
+    sin_ingredientes: 'Without the ingredient list, it can’t be known if sugar was added.',
+    saturadas: '{v} g saturated',
+    insaturadas: '{v} g unsaturated',
+    cucharadita: 'teaspoon of sugar',
+    cucharaditas: 'teaspoons of sugar',
+    en_cien: 'per 100 g',
+    en_envase: 'in the whole package ({v} g)',
+    en_tipica: 'in a typical portion ({v} g)',
   },
 
   misProductos: {

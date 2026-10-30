@@ -2,7 +2,7 @@
 
 import { t } from '../i18n/index.js';
 import { icono } from '../ui/iconos.js';
-import { esc, claseBanda, resultadoActual } from '../ui/comunes.js';
+import { esc, resultadoActual, filaProducto } from '../ui/comunes.js';
 import { leer, guardar, leerHistorial } from '../datos/almacen.js';
 import { CATEGORIAS } from '../puntaje/reglas.js';
 
@@ -42,13 +42,9 @@ export function pantallaMisProductos() {
             ${porCategoria
               .get(categoria)
               .map(
-                ({ entrada, resultado }) => `
+                ({ entrada }) => `
               <li class="fila-con-accion">
-                <a class="fila-producto tocable" href="#/resultado/${encodeURIComponent(entrada.id)}">
-                  <span class="nota-mini ${claseBanda(resultado.nota, resultado.provisional)}"
-                    aria-label="${esc(`${t('resultado.calidad')} ${resultado.nota} ${t('resultado.deDiez')}`)}">${esc(resultado.nota)}</span>
-                  <span class="texto"><span class="nombre">${esc(entrada.ficha.nombre)}</span></span>
-                </a>
+                ${filaProducto(entrada, `#/resultado/${encodeURIComponent(entrada.id)}`)}
                 <button type="button" class="boton-redondo chico tocable" data-accion="quitar-producto" data-id="${esc(entrada.id)}"
                   aria-label="${esc(t('misProductos.quitar', { nombre: entrada.ficha.nombre }))}">${icono('cruz', 'sm')}</button>
               </li>`,

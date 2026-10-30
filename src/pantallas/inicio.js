@@ -1,6 +1,6 @@
 import { t } from '../i18n/index.js';
 import { icono } from '../ui/iconos.js';
-import { esc, claseBanda, iconoLinea, resultadoActual } from '../ui/comunes.js';
+import { esc, filaProducto } from '../ui/comunes.js';
 import { leerPerfil, guardarPerfil, leerHistorial, agregarAlHistorial } from '../datos/almacen.js';
 import { analizar } from '../puntaje/index.js';
 import { completitud } from '../perfil/preguntas.js';
@@ -27,23 +27,7 @@ function avisoPerfil(perfil) {
   return `<a class="link-completar tocable" href="#/perfil">${esc(t('perfil.completarCorto', { p: porcentaje }))}</a>`;
 }
 
-function filaProducto(entrada) {
-  const resultado = resultadoActual(entrada);
-  const nombre = entrada.ficha.nombre;
-  const linea = resultado.linea;
-  return `
-    <li>
-      <a class="fila-producto tocable" href="#/resultado/${encodeURIComponent(entrada.id)}">
-        <span class="nota-mini ${claseBanda(resultado.nota, resultado.provisional)}"
-          aria-label="${esc(`${t('resultado.calidad')} ${resultado.nota} ${t('resultado.deDiez')}`)}">${esc(resultado.nota)}</span>
-        <span class="texto">
-          <span class="nombre">${esc(nombre)}</span>
-          ${linea ? `<span class="detalle linea-${linea}">${icono(iconoLinea[linea], 'sm')}${esc(t(`lineas.${linea}`))}</span>` : ''}
-        </span>
-        ${icono('derecha')}
-      </a>
-    </li>`;
-}
+const filaReciente = (entrada) => `<li>${filaProducto(entrada, `#/resultado/${encodeURIComponent(entrada.id)}`)}</li>`;
 
 function recientes(historial) {
   if (historial.length === 0) {
@@ -53,7 +37,7 @@ function recientes(historial) {
         <button class="boton-pastilla tocable" data-accion="cargar-ejemplos">${esc(t('inicio.cargarEjemplos'))}</button>
       </div>`;
   }
-  return `<ul class="lista-productos">${historial.slice(0, MAXIMO_RECIENTES).map(filaProducto).join('')}</ul>`;
+  return `<ul class="lista-productos">${historial.slice(0, MAXIMO_RECIENTES).map(filaReciente).join('')}</ul>`;
 }
 
 export function pantallaInicio() {
