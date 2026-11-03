@@ -59,6 +59,12 @@ export function pantallaInicio() {
         <p>${esc(t('inicio.analizarSub'))}</p>
       </a>
 
+      <a class="fila-buscar tocable" href="#/buscar">
+        ${icono('lupa')}
+        <span class="texto"><strong>${esc(t('inicio.buscar'))}</strong><span>${esc(t('inicio.buscarSub'))}</span></span>
+        ${icono('derecha')}
+      </a>
+
       <div class="bloques-dobles">
         <a class="bloque-chico oscuro tocable" href="#/comparar">
           ${icono('balanza', 'lg')}

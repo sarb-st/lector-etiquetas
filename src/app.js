@@ -13,6 +13,7 @@ import {
   alternarAnalisis,
   enviarCambioTipo,
   enviarEnvase,
+  escribirTextosDe,
 } from './pantallas/resultado.js';
 import { pantallaPreguntas, pantallaEditarPregunta, accionPreguntas, entradaPreguntas } from './pantallas/preguntas.js';
 import { pantallaPerfil } from './pantallas/perfil.js';
@@ -22,6 +23,7 @@ import { leerPerfil, leerHistorial, buscarEnHistorial } from './datos/almacen.js
 import { pantallaComparar, pantallaElegir, ponerEnCasilla, montarComparar } from './pantallas/comparar.js';
 import { pantallaCrearClave } from './pantallas/crear-clave.js';
 import { pantallaGuia, pantallaCapitulo, montarGuia } from './pantallas/guia.js';
+import { pantallaBuscar, montarBuscar, entradaBuscar, accionBuscar } from './pantallas/buscar.js';
 import {
   pantallaMeCaeBien,
   pantallaPuntual,
@@ -71,6 +73,7 @@ const rutas = [
   { patron: /^\/preguntas\/editar\/([a-z0-9]+)$/, tab: null, dibujar: (m) => pantallaEditarPregunta(m[1]) },
   { patron: /^\/preguntas\/([a-z]+)(?:\/(\d+))?$/, tab: null, dibujar: (m) => pantallaPreguntas(m[1], m[2]) },
   { patron: /^\/analizar$/, tab: null, dibujar: () => pantallaEscanear(), montar: montarEscaner },
+  { patron: /^\/buscar(?:\/comparar\/(a|b))?$/, tab: null, dibujar: (m) => pantallaBuscar(m[1] ?? null), montar: montarBuscar },
   { patron: /^\/analizar\/fotos$/, tab: null, dibujar: () => pantallaFotos() },
   { patron: /^\/analizar\/procesando$/, tab: null, dibujar: () => pantallaProcesando() },
   { patron: /^\/analizar\/comparar\/(a|b)$/, tab: null, dibujar: (m) => pantallaEscanear(m[1]), montar: montarEscaner },
@@ -157,7 +160,8 @@ document.addEventListener('click', async (evento) => {
     accionPreguntas(boton, raiz) ||
     accionAjustes(boton, redibujar) ||
     accionAnalizar(boton) ||
-    accionMeCaeBien(boton, redibujar)
+    accionMeCaeBien(boton, redibujar) ||
+    accionBuscar(boton)
   ) {
     return;
   }
@@ -184,7 +188,24 @@ document.addEventListener('click', async (evento) => {
     hoja.showModal();
   } else if (accion === 'cerrar-hoja') {
     hoja.close();
+  } else if (accion === 'escribir-textos') {
+    await escribirTextosDe(raiz.querySelector('[data-id]')?.dataset.id, boton);
+    redibujar();
   }
+});
+
+// Cuando llegan los textos de un análisis que se está mirando, se redibuja en el lugar.
+// Si hay una hoja abierta, espera a que se cierre; el análisis completo queda como estaba.
+window.addEventListener('entrada-actualizada', (evento) => {
+  const id = evento.detail.id;
+  const actualizar = () => {
+    if (raiz.querySelector('.pantalla-resultado')?.dataset.id !== id) return;
+    const abierta = document.querySelector('.hoja-analisis')?.dataset.estado === 'abierta';
+    redibujar();
+    if (abierta) alternarAnalisis(true);
+  };
+  if (hoja.open) hoja.addEventListener('close', actualizar, { once: true });
+  else actualizar();
 });
 
 // Escape cierra el análisis completo.
@@ -203,6 +224,7 @@ document.addEventListener(
 
 document.addEventListener('input', (evento) => {
   if (evento.target.matches('.preguntas [data-campo]')) entradaPreguntas(evento.target);
+  else entradaBuscar(evento.target);
 });
 
 document.addEventListener('submit', (evento) => {

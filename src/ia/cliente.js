@@ -125,9 +125,10 @@ export async function probarClave() {
 
 // Hace un pedido que devuelve JSON con la forma del esquema.
 // contenido: lista de bloques (texto e imágenes) del mensaje del usuario.
-export async function pedirJSON({ sistema, contenido, esquema, esfuerzo = 'medium', maxTokens = 16000 }) {
+// modeloFijo: una clave de MODELOS para usar ese modelo sin importar el de Ajustes.
+export async function pedirJSON({ sistema, contenido, esquema, esfuerzo = 'medium', maxTokens = 16000, modeloFijo = null }) {
   const api = await cliente();
-  const { modelo: claveModelo } = leerAjustes();
+  const claveModelo = modeloFijo ?? leerAjustes().modelo;
   const modelo = MODELOS[claveModelo]?.id ?? MODELOS.preciso.id;
 
   const pedido = {

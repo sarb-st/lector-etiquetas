@@ -12,6 +12,8 @@ export default {
   tabs: { inicio: 'Home', misProductos: 'My products', guia: 'Guide', perfil: 'Profile' },
 
   inicio: {
+    buscar: 'Look up a food without a barcode',
+    buscarSub: 'Fruit, vegetables, meat, bread, cheese or deli counter',
     tuObjetivo: 'Your goal',
     sinObjetivo: 'Tell me your goal',
     analizar: 'Analyze a product',
@@ -53,6 +55,13 @@ export default {
   },
 
   resultado: {
+    datosBLS: 'Official data from the BLS (German food database).',
+    datosBLSEstimado: 'Official BLS data. Processing is estimated from the type of food: the label or the counter may say otherwise.',
+    sinListaRestricciones: 'Without an ingredient list I can’t check allergens or intolerances. Check the label or ask at the counter.',
+    escribiendoTextos: 'Writing the explanation…',
+    revisandoRestricciones: 'Checking allergens and intolerances…',
+    sinTextos: 'The explanations are missing.',
+    escribirTextos: 'Write them',
     titulo: 'Result',
     volver: 'Back',
     comparar: 'Compare',
@@ -200,6 +209,17 @@ export default {
     energia_rapida: 'Sugar reaches your blood fast and muscles can use it right away.',
   },
 
+  buscar: {
+    titulo: 'Look up a food',
+    bajada: 'For things without a barcode: fruit, vegetables, meat, fish, bakery bread, cheese or deli counter.',
+    campo: 'Food name',
+    ejemplo: 'E.g. apple, chicken breast, gouda',
+    ayuda: 'Type the name in Spanish or German, as it appears in the shop.',
+    nada: 'I couldn’t find "{texto}". Try another word or the German name.',
+    cargando: 'Loading the foods…',
+    fuente: 'Data: Max Rubner-Institut (2025), Bundeslebensmittelschlüssel (BLS) 4.0. CC BY 4.0 licence.',
+  },
+
   guia: {
     bajada: 'Short chapters, written at your level. You can also read the other levels.',
     niveles: 'Guide levels',
@@ -277,6 +297,7 @@ export default {
     camaraNoDisponible: 'I couldn’t open the camera. Type the code below or take photos of the label.',
     escribirCodigo: 'Or type the code',
     buscar: 'Search',
+    buscarSuelto: 'Loose fruit, veg or meat: look it up',
     sinCodigo: 'No barcode: take photos',
     fotosTitulo: 'Take two photos',
     fotosAyuda: 'They’re usually on different sides of the package. Make sure they’re readable, without glare.',

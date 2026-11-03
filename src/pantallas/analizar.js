@@ -31,6 +31,7 @@ function nuevoEstado() {
     reemplazarId: null,
     pregunta: null,
     fichaElegida: null,
+    fuente: null,
   };
 }
 
@@ -98,6 +99,7 @@ export function pantallaEscanear(lugar = null) {
         <button type="submit" class="boton-principal chico tocable">${esc(t('analizar.buscar'))}</button>
       </form>
       <a class="boton-secundario tocable" href="#/analizar/fotos">${icono('escanear', 'sm')}${esc(t('analizar.sinCodigo'))}</a>
+      <a class="boton-secundario tocable" href="${paraComparar ? `#/buscar/comparar/${paraComparar}` : '#/buscar'}">${icono('lupa', 'sm')}${esc(t('analizar.buscarSuelto'))}</a>
     </div>`;
 }
 
@@ -258,7 +260,8 @@ export async function recibirFoto(entrada, redibujar) {
 
 // ---------- Procesando ----------
 
-const PASOS = ['buscando', 'leyendo', 'calculando', 'escribiendo'];
+// Los textos se escriben después, con el resultado ya en pantalla.
+const PASOS = ['buscando', 'leyendo', 'calculando'];
 
 export function pantallaProcesando() {
   // El código se leyó, pero el producto no está completo en la base: se explica y se ofrece seguir con fotos.
@@ -345,7 +348,7 @@ async function correrAnalisis() {
     else redibujar();
   };
   try {
-    const fuente = estado.off ? 'open_food_facts' : 'fotos';
+    const fuente = estado.fuente ?? (estado.off ? 'open_food_facts' : 'fotos');
     const pedido = {
       fotos: estado.fotos,
       off: estado.off,
@@ -384,6 +387,19 @@ function irAlResultado(id) {
     return;
   }
   location.hash = `#/resultado/${encodeURIComponent(id)}`;
+}
+
+// Un alimento sin código elegido en "Buscar" (BLS): la ficha ya está, solo falta calcular
+// y escribir los textos. lugar: la casilla de "Comparar" a la que va, o null.
+export function analizarAlimentoBLS(ficha, codigoBLS, lugar = null) {
+  estado = nuevoEstado();
+  paraComparar = lugar;
+  estado.fichaElegida = ficha;
+  estado.fuente = 'bls';
+  estado.reemplazarId = `bls-${codigoBLS}`;
+  estado.paso = 'calculando';
+  location.hash = '#/analizar/procesando';
+  correrAnalisis();
 }
 
 // Desde "¿Me cae bien?": seguir con el análisis nutricional del mismo producto.

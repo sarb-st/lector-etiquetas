@@ -4,7 +4,7 @@ import { pedirJSON } from './cliente.js';
 import { ESQUEMA_FICHA, SISTEMA_LECTURA, ESQUEMA_TEXTOS, sistemaTextos } from './instrucciones.js';
 import { analizar } from '../puntaje/index.js';
 import { normalizarPerfil } from '../puntaje/objetivo.js';
-import { leerPerfil, agregarAlHistorial, buscarEnHistorial } from '../datos/almacen.js';
+import { leerPerfil, agregarAlHistorial, buscarEnHistorial, actualizarEntrada } from '../datos/almacen.js';
 import { idioma } from '../i18n/index.js';
 import { chequear, restriccionesDelPerfil, textoDeFicha } from './chequeo.js';
 import { miniatura } from '../datos/fotos.js';
@@ -45,7 +45,16 @@ export async function leerEtiqueta({ fotos = {}, off = null }) {
     text: `Devolvé la ficha. Idioma del usuario para traducciones y tipoDetectado: ${NOMBRE_IDIOMA[idioma()] ?? 'español'}.${faltantes.length ? '\n' + faltantes.join('\n') : ''}`,
   });
 
-  const { datos } = await pedirJSON({ sistema: SISTEMA_LECTURA, contenido, esquema: ESQUEMA_FICHA, esfuerzo: 'medium' });
+  // Sin fotos (solo datos de Open Food Facts) la tarea es ordenar datos ya escritos:
+  // Haiku la hace mucho más rápido. Con fotos, el modelo elegido en Ajustes.
+  const soloDatos = !fotos.tabla && !fotos.ingredientes && !fotos.frente;
+  const { datos } = await pedirJSON({
+    sistema: SISTEMA_LECTURA,
+    contenido,
+    esquema: ESQUEMA_FICHA,
+    esfuerzo: 'medium',
+    modeloFijo: off && soloDatos ? 'economico' : null,
+  });
 
   // Lo que no se pidió no puede venir de la IA: sin foto, el dato queda vacío.
   if (!fotos.tabla && !off) datos.nutrientes = null;
@@ -94,6 +103,9 @@ export async function escribirTextos(ficha, resultado, perfil) {
       contenidoEnvase: ficha.contenidoEnvase,
       porcionIndividual: ficha.porcionIndividual,
       porcionTipicaEstimada: ficha.porcionTipica,
+      // Alimentos sin código: datos oficiales del BLS. Su lista de ingredientes es una suposición
+      // según el tipo de alimento cuando ingredientesEstimados es true: no la cites como un dato.
+      ...(ficha.bls ? { fuente: 'BLS 4.0 (base oficial alemana de alimentos)', ingredientesEstimados: ficha.ingredientesEstimados, micronutrientesCada100: ficha.micronutrientes } : {}),
     },
     decidido: {
       nota: resultado.nota,
@@ -145,18 +157,6 @@ export async function analizarProducto({ fotos, off, codigo, fuente, id, fichaEl
   const resultado = analizar(ficha, normalizarPerfil(perfil));
   if (resultado.nota === null && !ficha.ingredientes) return { error: 'sin_datos' };
 
-  avisar('escribiendo');
-  // Si el perfil tiene restricciones, el chequeo de "¿Me cae bien?" corre al mismo tiempo.
-  const restricciones = restriccionesDelPerfil(perfil);
-  const textoIngredientes = textoDeFicha(ficha);
-  const [textos, chequeo] = await Promise.all([
-    resultado.nota === null ? {} : escribirTextos(ficha, resultado, perfil),
-    restricciones.length && textoIngredientes
-      ? // Si el chequeo falla, el análisis sigue igual: se puede revisar después en "¿Me cae bien?".
-        chequear({ texto: textoIngredientes, trazas: ficha.trazas }, restricciones).catch(() => null)
-      : null,
-  ]);
-
   // Foto chiquita para reconocer el producto: la del frente de Open Food Facts,
   // o una miniatura de la foto del frente que sacó la persona.
   let imagen = off?.imagen ?? null;
@@ -172,11 +172,37 @@ export async function analizarProducto({ fotos, off, codigo, fuente, id, fichaEl
     imagen,
     ficha,
     resultado,
-    textos: { [idioma()]: textos },
-    chequeo,
+    textos: {},
+    chequeo: null,
   };
   agregarAlHistorial(entrada);
+  // La nota ya está: el resultado se muestra enseguida y los textos llegan después.
+  completarEntrada(entrada.id, ficha, resultado, perfil);
   return { entrada };
+}
+
+// Productos cuyos textos y chequeo de alérgenos se están escribiendo ahora.
+const enCurso = new Set();
+export const escribiendo = (id) => enCurso.has(id);
+
+// Escribe los textos y, si el perfil tiene restricciones, hace el chequeo de "¿Me cae bien?"
+// al mismo tiempo. Al terminar guarda todo y avisa con el evento "entrada-actualizada".
+async function completarEntrada(id, ficha, resultado, perfil) {
+  enCurso.add(id);
+  const restricciones = restriccionesDelPerfil(perfil);
+  const textoIngredientes = textoDeFicha(ficha);
+  const [textos, chequeo] = await Promise.all([
+    resultado.nota === null ? {} : escribirTextos(ficha, resultado, perfil).catch((error) => ({ error: error.tipo ?? 'otro' })),
+    restricciones.length && textoIngredientes
+      ? // Si el chequeo falla, el análisis sigue igual: se puede revisar después en "¿Me cae bien?".
+        chequear({ texto: textoIngredientes, trazas: ficha.trazas }, restricciones).catch(() => null)
+      : null,
+  ]);
+  enCurso.delete(id);
+  const cambios = { chequeo, errorTextos: textos.error ?? null };
+  if (!textos.error) cambios.textos = { ...(buscarEnHistorial(id)?.textos ?? {}), [idioma()]: textos };
+  actualizarEntrada(id, cambios);
+  window.dispatchEvent(new CustomEvent('entrada-actualizada', { detail: { id } }));
 }
 
 // Un dato educativo para el pie de una comparación. La decisión ya la tomó el código.

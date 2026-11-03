@@ -11,10 +11,11 @@ import {
   fotoProducto,
 } from '../ui/comunes.js';
 import { buscarEnOpenFoodFacts } from '../datos/open-food-facts.js';
-import { buscarEnHistorial, actualizarFicha, actualizarEntrada } from '../datos/almacen.js';
+import { buscarEnHistorial, actualizarFicha, actualizarEntrada, leerPerfil } from '../datos/almacen.js';
 import { CATEGORIAS } from '../puntaje/reglas.js';
 import { leerClave } from './ajustes.js';
-import { reescribirTextos } from '../ia/analisis.js';
+import { reescribirTextos, escribiendo } from '../ia/analisis.js';
+import { restriccionesDelPerfil } from '../ia/chequeo.js';
 import { porcionDe } from '../puntaje/derivados.js';
 import { partesAzucar, partesGrasa, cucharaditas } from '../puntaje/composicion.js';
 import { tipoSugerencia, mejorasSugeridas } from '../puntaje/sugerencia.js';
@@ -43,6 +44,12 @@ function cabecera(entrada, textos) {
 
 // Si los datos vienen de Open Food Facts, se dice y se ofrece confirmarlos con fotos.
 function marcaFuente(entrada) {
+  if (entrada.fuente === 'bls') {
+    return `
+    <p class="marca-fuente">
+      ${icono('info', 'sm')}<span>${esc(t(entrada.ficha.ingredientesEstimados ? 'resultado.datosBLSEstimado' : 'resultado.datosBLS'))}</span>
+    </p>`;
+  }
   if (entrada.fuente !== 'open_food_facts') return '';
   return `
     <p class="marca-fuente">
@@ -109,6 +116,12 @@ function avisoParcial(resultado) {
 // Resultado del chequeo automático de alérgenos e intolerancias, arriba de todo.
 function avisoRestricciones(entrada) {
   const r = entrada.chequeo;
+  if (!r && entrada.ficha.ingredientesEstimados && restriccionesDelPerfil(leerPerfil()).length) {
+    return `<div class="aviso-parcial" role="status">${icono('alerta')}<p class="texto">${esc(t('resultado.sinListaRestricciones'))}</p></div>`;
+  }
+  if (!r && escribiendo(entrada.id) && restriccionesDelPerfil(leerPerfil()).length) {
+    return `<p class="escribiendo-textos" role="status"><span class="punto-vivo" aria-hidden="true"></span>${esc(t('resultado.revisandoRestricciones'))}</p>`;
+  }
   if (!r) return '';
   const noAptas = r.restricciones.filter((x) => x.estado === 'no_apto').map((x) => nombreRestriccion(x.clave));
   const subtitulo =
@@ -510,6 +523,34 @@ async function completarFoto(raiz) {
   if (caja && raiz.contains(caja)) caja.outerHTML = fotoProducto({ ...entrada, imagen });
 }
 
+// Mientras se escriben los textos, un aviso; si no se pudieron escribir, un botón para reintentar.
+function estadoTextos(entrada, resultado) {
+  if (resultado.nota === null) return '';
+  if (escribiendo(entrada.id)) {
+    return `<p class="escribiendo-textos" role="status"><span class="punto-vivo" aria-hidden="true"></span>${esc(t('resultado.escribiendoTextos'))}</p>`;
+  }
+  const motivo = entrada.errorTextos ? t(`analizar.error_${entrada.errorTextos}`) : '';
+  return `
+    <div class="aviso-parcial" role="status">
+      ${icono('info')}
+      <p class="texto"><strong>${esc(t('resultado.sinTextos'))}</strong> ${esc(motivo)}</p>
+      ${leerClave() ? `<button type="button" class="boton-pastilla tocable" data-accion="escribir-textos">${esc(t('resultado.escribirTextos'))}</button>` : ''}
+    </div>`;
+}
+
+// Botón "Escribir las explicaciones": vuelve a pedir los textos de un resultado guardado.
+export async function escribirTextosDe(id, boton) {
+  const entrada = buscarEnHistorial(id);
+  if (!entrada) return;
+  boton.disabled = true;
+  boton.textContent = t('resultado.escribiendoTextos');
+  try {
+    actualizarEntrada(id, { textos: await reescribirTextos(entrada), errorTextos: null });
+  } catch (error) {
+    actualizarEntrada(id, { errorTextos: error.tipo ?? 'otro' });
+  }
+}
+
 export function pantallaResultado(id) {
   const entrada = buscarEnHistorial(id);
   if (!entrada) {
@@ -528,7 +569,7 @@ export function pantallaResultado(id) {
       ${avisoRestricciones(entrada)}
       ${cabecera(entrada, textos)}
       ${bloqueNota(resultado)}
-      ${textos.titular ? `<p class="titular">${esc(textos.titular)}</p>` : ''}
+      ${textos.titular ? `<p class="titular">${esc(textos.titular)}</p>` : estadoTextos(entrada, resultado)}
       ${bloqueLinea(resultado, textos)}
       ${bloqueEnvase(entrada)}
       ${deUnVistazo(resultado)}

@@ -121,7 +121,8 @@ export async function chequear({ foto = null, texto = null, trazas = null }, res
 
 // Texto de ingredientes a partir de la ficha ya leída (para el chequeo automático).
 export function textoDeFicha(ficha) {
-  if (!ficha.ingredientes) return null;
+  // Una lista estimada (alimentos del BLS) no sirve para revisar alérgenos.
+  if (!ficha.ingredientes || ficha.ingredientesEstimados) return null;
   return ficha.ingredientes.map((i) => i.texto).join(', ');
 }
 

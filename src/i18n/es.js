@@ -13,6 +13,8 @@ export default {
   tabs: { inicio: 'Inicio', misProductos: 'Mis productos', guia: 'Guía', perfil: 'Perfil' },
 
   inicio: {
+    buscar: 'Buscar un alimento sin código',
+    buscarSub: 'Fruta, verdura, carne, pan, queso o fiambre al corte',
     tuObjetivo: 'Tu objetivo',
     sinObjetivo: 'Contame tu objetivo',
     analizar: 'Analizar un producto',
@@ -54,6 +56,13 @@ export default {
   },
 
   resultado: {
+    datosBLS: 'Datos oficiales del BLS (base alemana de alimentos).',
+    datosBLSEstimado: 'Datos oficiales del BLS. El procesamiento se estima por el tipo de alimento: la etiqueta o el mostrador pueden decir otra cosa.',
+    sinListaRestricciones: 'Sin lista de ingredientes no puedo revisar alérgenos ni intolerancias. Mirá la etiqueta o preguntá en el mostrador.',
+    escribiendoTextos: 'Escribiendo la explicación…',
+    revisandoRestricciones: 'Revisando alérgenos e intolerancias…',
+    sinTextos: 'Faltan las explicaciones.',
+    escribirTextos: 'Escribirlas',
     titulo: 'Resultado',
     volver: 'Volver',
     comparar: 'Comparar',
@@ -203,6 +212,17 @@ export default {
     energia_rapida: 'El azúcar pasa rápido a la sangre y el músculo lo puede usar enseguida.',
   },
 
+  buscar: {
+    titulo: 'Buscar un alimento',
+    bajada: 'Para lo que no tiene código: fruta, verdura, carne, pescado, pan de panadería, queso o fiambre al corte.',
+    campo: 'Nombre del alimento',
+    ejemplo: 'Ej.: manzana, pechuga de pollo, gouda',
+    ayuda: 'Escribí el nombre en español o en alemán, como figura en el súper.',
+    nada: 'No encontré "{texto}". Probá con otra palabra o con el nombre en alemán.',
+    cargando: 'Cargando los alimentos…',
+    fuente: 'Datos: Max Rubner-Institut (2025), Bundeslebensmittelschlüssel (BLS) 4.0. Licencia CC BY 4.0.',
+  },
+
   guia: {
     bajada: 'Capítulos cortos, escritos a tu nivel. Podés leer también los otros niveles.',
     niveles: 'Niveles de la guía',
@@ -281,6 +301,7 @@ export default {
     camaraNoDisponible: 'No pude abrir la cámara. Escribí el código abajo o sacale fotos a la etiqueta.',
     escribirCodigo: 'O escribí el código',
     buscar: 'Buscar',
+    buscarSuelto: 'Fruta, verdura o carne suelta: buscar',
     sinCodigo: 'No tiene código: sacar fotos',
     fotosTitulo: 'Sacale dos fotos',
     fotosAyuda: 'Suelen estar en caras distintas del envase. Que se lean bien, sin reflejos.',

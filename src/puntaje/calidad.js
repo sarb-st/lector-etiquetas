@@ -11,7 +11,6 @@ import {
   CALORIAS_ESCALONES,
   TECHOS,
   CALORIAS_TECHO,
-  BEBIDA_AZUCARADA_MINIMO,
   AJUSTE_EXIGENCIA,
   AJUSTE_TECHOS_SIMPLES,
 } from './reglas.js';
@@ -66,7 +65,7 @@ function techosQueAplican(ficha, d, exigencia) {
   const cantidadExcesos = [excesoAzucarAgregado, excesoSal, excesoSaturadas].filter(Boolean).length;
   if (cantidadExcesos >= 2 && !d.esSimple) agregar('dos_excesos', TECHOS.dosExcesos + ajuste);
 
-  if (ficha.esBebida && d.azucarAgregado.hay && tieneValor(n.azucares) && n.azucares > BEBIDA_AZUCARADA_MINIMO) {
+  if (d.bebidaAzucarada) {
     agregar('bebida_azucarada', TECHOS.bebidaAzucarada + ajuste);
   }
   if (d.procesamiento === 'ultra') agregar('ultraprocesado', TECHOS.ultraprocesado + ajuste);

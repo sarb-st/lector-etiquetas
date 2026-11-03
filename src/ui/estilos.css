@@ -3765,3 +3765,133 @@ select.campo-texto {
   margin-top: var(--s-2);
   font-weight: 600;
 }
+
+/* ---------- Textos que todavía se están escribiendo ---------- */
+
+.escribiendo-textos {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: var(--s-4) 0;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--brand-tint);
+  color: var(--on-brand-tint);
+  font-weight: 600;
+}
+
+.punto-vivo {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: punto-vivo 1.2s ease-in-out infinite;
+}
+
+@keyframes punto-vivo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .punto-vivo {
+    animation: none;
+  }
+}
+
+/* ---------- Buscar un alimento sin código (BLS) ---------- */
+
+.fila-buscar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  min-height: 56px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  text-decoration: none;
+}
+
+.fila-buscar .texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fila-buscar .texto span {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.campo-busqueda {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-4) 0;
+  padding-left: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.campo-busqueda .campo-texto {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 17px;
+}
+
+.lista-bls {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.fila-bls {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 56px;
+  padding: var(--s-3) var(--s-4);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fila-bls .texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fila-bls .nombre {
+  font-weight: 600;
+}
+
+.fila-bls .detalle {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.fuente-bls {
+  margin: var(--s-5) 0;
+  font-size: 12px;
+  color: var(--ink-2);
+}

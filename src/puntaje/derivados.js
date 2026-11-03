@@ -35,6 +35,7 @@ import {
   CATEGORIAS_AL_MENOS_PROCESADO,
   TIPOS_MINIMAMENTE_PROCESADO,
   NOTA_ACEITES,
+  BEBIDA_AZUCARADA_MINIMO,
 } from './reglas.js';
 
 const tieneValor = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -100,18 +101,31 @@ function nivelFibra(fibra, kcal, hayFibraAgregada) {
 
 function azucarAgregado(ficha) {
   const ingredientes = ficha.ingredientes;
-  if (!ingredientes) return { hay: null, casiTodo: null };
+  if (!ingredientes) return { hay: null, casiTodo: null, principal: null };
   const posicion = ingredientes.findIndex((i) => i.tipo === 'azucar');
-  if (posicion === -1) return { hay: false, casiTodo: false };
+  // Con una lista estimada (alimentos del BLS) no se puede afirmar que no hay azúcar agregado.
+  if (posicion === -1 && ficha.ingredientesEstimados) return { hay: null, casiTodo: null, principal: null };
+  if (posicion === -1) return { hay: false, casiTodo: false, principal: false };
+  const principal = posicion < POSICIONES_AZUCAR_PRINCIPAL;
 
   const azucares = ficha.nutrientes?.azucares;
   let casiTodo;
   if (tieneValor(ficha.azucarAgregadoEstimado) && tieneValor(azucares)) {
     casiTodo = ficha.azucarAgregadoEstimado > azucares / 2;
   } else {
-    casiTodo = posicion < POSICIONES_AZUCAR_PRINCIPAL;
+    casiTodo = principal;
   }
-  return { hay: true, casiTodo };
+  return { hay: true, casiTodo, principal };
+}
+
+// Bebida azucarada: su azúcar AGREGADO pasa el mínimo (estimado por la IA); si no se pudo
+// estimar, el azúcar total lo pasa y algún azúcar está entre los primeros ingredientes.
+function bebidaAzucarada(ficha, n) {
+  if (!ficha.esBebida) return false;
+  const agregado = azucarAgregado(ficha);
+  if (!agregado.hay) return false;
+  if (tieneValor(ficha.azucarAgregadoEstimado)) return ficha.azucarAgregadoEstimado > BEBIDA_AZUCARADA_MINIMO;
+  return agregado.principal && tieneValor(n.azucares) && n.azucares > BEBIDA_AZUCARADA_MINIMO;
 }
 
 // Cuánto se come de una vez: el envase si es individual; si no, la porción típica.
@@ -161,6 +175,7 @@ export function derivar(ficha) {
     nivelFibra: nivelFibra(n.fibra, n.kcal, hayFibraAgregada),
     hayFibraAgregada,
     azucarAgregado: azucarAgregado(ficha),
+    bebidaAzucarada: bebidaAzucarada(ficha, n),
     grasasBuenas,
     saturadasMala,
     niveles,

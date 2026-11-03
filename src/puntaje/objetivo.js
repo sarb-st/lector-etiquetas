@@ -13,7 +13,6 @@ import {
   SENALES,
   LINEA,
   CATEGORIAS_POCA_CANTIDAD,
-  BEBIDA_AZUCARADA_MINIMO,
 } from './reglas.js';
 import { derivar, tieneValor } from './derivados.js';
 
@@ -129,9 +128,7 @@ export function calcularLineaObjetivo(ficha, perfilCrudo, nota) {
     excepcion = 'poca_cantidad';
   }
 
-  const esBebidaAzucarada =
-    ficha.esBebida && d.azucarAgregado.hay && tieneValor(d.nutrientes.azucares) && d.nutrientes.azucares > BEBIDA_AZUCARADA_MINIMO;
-  if (esBebidaAzucarada && perfil.dificultades.includes('bebidas')) {
+  if (d.bebidaAzucarada && perfil.dificultades.includes('bebidas')) {
     linea = 'resta';
     excepcion = 'bebidas';
   }

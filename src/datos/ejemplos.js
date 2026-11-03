@@ -151,6 +151,39 @@ export const cocaCola = {
   ],
 };
 
+// Batido de reemplazo de comida (tipo yfood): casi todo su azúcar es de la leche.
+export const batidoProteico = {
+  nombre: 'Batido de reemplazo de comida',
+  categoria: 'bebidas',
+  esBebida: true,
+  nutrientes: { kcal: 100, grasa: 4.6, saturadas: 1.1, carbohidratos: 8.5, azucares: 4.5, fibra: 2.2, proteina: 6, sal: 0.3 },
+  ingredientes: [
+    ing('Magermilch', 'alimento'),
+    ing('Wasser', 'agua'),
+    ing('Milchproteinkonzentrat', 'aditivo', true),
+    ing('Rapsöl', 'grasa'),
+    ing('Maltodextrin', 'aditivo', true),
+    ing('Haferfaser', 'fibra_agregada'),
+    ing('Kokosmilchpulver', 'alimento'),
+    ing('Zucker', 'azucar'),
+    ing('Süßungsmittel Sucralose', 'aditivo', true),
+    ing('Aroma', 'aditivo', true),
+  ],
+  azucarAgregadoEstimado: 1,
+  contenidoEnvase: 500,
+  porcionIndividual: true,
+};
+
+// Leche chocolatada: unos 5 g de los 9 g de azúcar son agregados.
+export const lecheChocolatada = {
+  nombre: 'Leche chocolatada',
+  categoria: 'bebidas',
+  esBebida: true,
+  nutrientes: { kcal: 80, grasa: 1.5, saturadas: 1, carbohidratos: 11, azucares: 10, fibra: 0.5, proteina: 3.5, sal: 0.15 },
+  ingredientes: [ing('Milch', 'alimento'), ing('Zucker', 'azucar'), ing('Kakao', 'alimento'), ing('Stabilisator Carrageen', 'aditivo', true)],
+  azucarAgregadoEstimado: 5,
+};
+
 export const gominolas = {
   nombre: 'Gomitas de fruta',
   categoria: 'chocolates_golosinas',

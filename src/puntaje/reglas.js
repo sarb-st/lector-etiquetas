@@ -70,7 +70,9 @@ export const TECHOS = {
 };
 
 export const CALORIAS_TECHO = 500;
-// Una bebida es "azucarada" si tiene azúcar agregado y más de esto (g cada 100 ml).
+// Una bebida es "azucarada" si su azúcar AGREGADO pasa de esto (g cada 100 ml). Si no se
+// puede estimar cuánto es agregado: si el azúcar total pasa de esto y algún azúcar está
+// entre los primeros ingredientes. Así una bebida con leche y un poco de azúcar no cae acá.
 export const BEBIDA_AZUCARADA_MINIMO = 2.5;
 // La grasa es "mayormente saturada" si las saturadas pasan esta fracción.
 export const FRACCION_SATURADAS_MALA = 1 / 3;
