@@ -16,6 +16,7 @@ import {
   escribirTextosDe,
 } from './pantallas/resultado.js';
 import { compartirConOFF, descartarAporte } from './datos/subir-off.js';
+import { abrirChat, cerrarChat, chatAbierto, accionChat, enviarChat, entradaChat, teclaChat } from './pantallas/chat.js';
 import { pantallaPreguntas, pantallaEditarPregunta, accionPreguntas, entradaPreguntas } from './pantallas/preguntas.js';
 import { pantallaPerfil } from './pantallas/perfil.js';
 import { pantallaAjustes, accionAjustes, enviarFormularioAjustes, responderCompartirOFF } from './pantallas/ajustes.js';
@@ -163,7 +164,8 @@ document.addEventListener('click', async (evento) => {
     accionAjustes(boton, redibujar) ||
     accionAnalizar(boton) ||
     accionMeCaeBien(boton, redibujar) ||
-    accionBuscar(boton)
+    accionBuscar(boton) ||
+    accionChat(boton)
   ) {
     return;
   }
@@ -190,6 +192,8 @@ document.addEventListener('click', async (evento) => {
     hoja.showModal();
   } else if (accion === 'cerrar-hoja') {
     hoja.close();
+  } else if (accion === 'abrir-chat') {
+    abrirChat(raiz.querySelector('[data-id]')?.dataset.id, boton);
   } else if (accion === 'off-si' || accion === 'off-no') {
     const id = raiz.querySelector('[data-id]')?.dataset.id;
     responderCompartirOFF(accion === 'off-si');
@@ -213,7 +217,21 @@ window.addEventListener('entrada-actualizada', (evento) => {
     if (abierta) alternarAnalisis(true);
   };
   if (hoja.open) hoja.addEventListener('close', actualizar, { once: true });
+  else if (chatAbierto()) document.getElementById('chat').addEventListener('close', actualizar, { once: true });
   else actualizar();
+});
+
+// En el chat, Enter manda la pregunta.
+document.addEventListener('keydown', teclaChat);
+
+// El chat se cierra con su animación (también con Escape), y al cerrarse se actualiza la caja.
+const dialogoChat = document.getElementById('chat');
+dialogoChat.addEventListener('cancel', (evento) => {
+  evento.preventDefault();
+  cerrarChat();
+});
+dialogoChat.addEventListener('close', () => {
+  if (raiz.querySelector('.pantalla-resultado')) redibujar();
 });
 
 // Escape cierra el análisis completo.
@@ -232,7 +250,7 @@ document.addEventListener(
 
 document.addEventListener('input', (evento) => {
   if (evento.target.matches('.preguntas [data-campo]')) entradaPreguntas(evento.target);
-  else entradaBuscar(evento.target);
+  else if (!entradaChat(evento.target)) entradaBuscar(evento.target);
 });
 
 document.addEventListener('submit', (evento) => {
@@ -245,6 +263,10 @@ document.addEventListener('submit', (evento) => {
         redibujar();
       })
       .catch(() => {});
+    return;
+  }
+  if (enviarChat(formulario)) {
+    evento.preventDefault();
     return;
   }
   if (enviarEnvase(formulario)) {
@@ -271,6 +293,8 @@ hoja.addEventListener('close', () => {
 // Cambio de pantalla (ver ui/rutas.js): la dirección de la página no cambia.
 window.addEventListener('cambio-de-ruta', () => {
   if (hoja.open) hoja.close();
+  const chat = document.getElementById('chat');
+  if (chat.open) chat.close();
   navegar();
 });
 

@@ -67,7 +67,7 @@ export async function leerEtiqueta({ fotos = {}, off = null }) {
 }
 
 // Resumen del perfil para la IA: solo lo que sirve para escribir los textos.
-function perfilParaTextos(perfil) {
+export function perfilParaTextos(perfil) {
   const p = perfil ?? {};
   return {
     objetivos: p.objetivos ?? [],

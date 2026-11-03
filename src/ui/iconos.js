@@ -48,6 +48,9 @@ const trazos = {
   bandera:
     '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
   cuchara: '<ellipse cx="12" cy="6.5" rx="4" ry="4.5"/><path d="M12 11v11"/>',
+  burbuja: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>',
+  enviar: '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>',
+  abajo: '<path d="m6 9 6 6 6-6"/>',
   lupa:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   portapapeles:
     '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',

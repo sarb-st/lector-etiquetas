@@ -227,6 +227,18 @@ export default {
     energia_rapida: 'El azúcar pasa rápido a la sangre y el músculo lo puede usar enseguida.',
   },
 
+  chat: {
+    caja: 'Preguntá lo que quieras sobre este producto',
+    seguir: 'Seguir la conversación',
+    titulo: 'Preguntas sobre',
+    vacio: 'Preguntá lo que quieras: cuánto usar, cuándo comerlo, con qué combinarlo, si te sirve para algo puntual…',
+    placeholder: 'Escribí tu pregunta',
+    enviar: 'Enviar',
+    cerrar: 'Cerrar la conversación',
+    reintentar: 'Volver a preguntar',
+    sinClave: 'Para preguntar hace falta tu clave de la API (en Ajustes).',
+  },
+
   buscar: {
     borrar: 'Borrar la búsqueda',
     titulo: 'Buscar un alimento',

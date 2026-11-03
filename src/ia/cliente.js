@@ -126,7 +126,8 @@ export async function probarClave() {
 // Hace un pedido que devuelve JSON con la forma del esquema.
 // contenido: lista de bloques (texto e imágenes) del mensaje del usuario.
 // modeloFijo: una clave de MODELOS para usar ese modelo sin importar el de Ajustes.
-export async function pedirJSON({ sistema, contenido, esquema, esfuerzo = 'medium', maxTokens = 16000, modeloFijo = null }) {
+// anteriores: mensajes previos de una conversación ({ role, content }), antes del actual.
+export async function pedirJSON({ sistema, contenido, esquema, esfuerzo = 'medium', maxTokens = 16000, modeloFijo = null, anteriores = [] }) {
   const api = await cliente();
   const claveModelo = modeloFijo ?? leerAjustes().modelo;
   const modelo = MODELOS[claveModelo]?.id ?? MODELOS.preciso.id;
@@ -135,7 +136,7 @@ export async function pedirJSON({ sistema, contenido, esquema, esfuerzo = 'mediu
     model: modelo,
     max_tokens: maxTokens,
     system: sistema,
-    messages: [{ role: 'user', content: contenido }],
+    messages: [...anteriores, { role: 'user', content: contenido }],
     output_config: { effort: esfuerzo, format: { type: 'json_schema', schema: esquema } },
   };
 

@@ -15,6 +15,7 @@ import { buscarEnHistorial, actualizarFicha, actualizarEntrada, leerPerfil } fro
 import { CATEGORIAS } from '../puntaje/reglas.js';
 import { leerClave, leerAjustes } from './ajustes.js';
 import { hayAportePendiente } from '../datos/subir-off.js';
+import { cajaPregunta } from './chat.js';
 import { reescribirTextos, escribiendo } from '../ia/analisis.js';
 import { restriccionesDelPerfil } from '../ia/chequeo.js';
 import { porcionDe } from '../puntaje/derivados.js';
@@ -606,6 +607,7 @@ export function pantallaResultado(id) {
       ${sirvePara(resultado)}
       ${cuando(textos)}
       ${bloqueSugerencia(textos, resultado, entrada.ficha)}
+      ${cajaPregunta(entrada)}
       ${resultado.nota === null ? '' : '<div class="centinela-analisis" aria-hidden="true"></div>'}
     </div>
     ${resultado.nota === null ? '' : analisisCompleto(resultado, textos, entrada.ficha)}`;

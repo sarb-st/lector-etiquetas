@@ -224,6 +224,18 @@ export default {
     energia_rapida: 'Sugar reaches your blood fast and muscles can use it right away.',
   },
 
+  chat: {
+    caja: 'Ask anything about this product',
+    seguir: 'Continue the conversation',
+    titulo: 'Questions about',
+    vacio: 'Ask anything: how much to use, when to eat it, what to pair it with, whether it suits something specific…',
+    placeholder: 'Type your question',
+    enviar: 'Send',
+    cerrar: 'Close the conversation',
+    reintentar: 'Ask again',
+    sinClave: 'To ask questions you need your API key (in Settings).',
+  },
+
   buscar: {
     borrar: 'Clear the search',
     titulo: 'Look up a food',
