@@ -14,6 +14,7 @@ import { buscarEnOpenFoodFacts } from '../datos/open-food-facts.js';
 import { prepararFoto } from '../datos/fotos.js';
 import { chequear, restriccionesDelPerfil, INTOLERANCIAS, DIETAS, EVITA_RAPIDOS } from '../ia/chequeo.js';
 import { ALERGENOS } from '../ia/instrucciones.js';
+import { irA } from '../ui/rutas.js';
 
 let estado = nuevoEstado();
 
@@ -124,7 +125,7 @@ export function pantallaPuntual() {
 export function pantallaEscanearMcb() {
   if (!leerClave()) return sinClave();
   if (!estado.modo) {
-    location.hash = '#/me-cae-bien';
+    irA('#/me-cae-bien');
     return '<div class="pantalla"></div>';
   }
   const aviso = estado.aviso ? `<div class="aviso-parcial" role="status">${icono('info')}<p class="texto">${esc(t(`meCaeBien.aviso_${estado.aviso}`))}</p></div>` : '';
@@ -168,7 +169,7 @@ async function usarCodigo(codigo) {
   if (!encontrado?.datos.ingredientes?.trim()) {
     estado.cargando = false;
     estado.aviso = encontrado ? 'sinIngredientes' : 'noEncontrado';
-    location.hash = '#/me-cae-bien/escanear';
+    irA('#/me-cae-bien/escanear');
     return;
   }
   estado.off = encontrado.completo ? encontrado.datos : null;
@@ -204,8 +205,7 @@ async function correr(entrada) {
 }
 
 function irAResultado() {
-  if (location.hash === '#/me-cae-bien/resultado') window.dispatchEvent(new HashChangeEvent('hashchange'));
-  else location.hash = '#/me-cae-bien/resultado';
+  irA('#/me-cae-bien/resultado');
 }
 
 // ---------- Resultado ----------
@@ -251,7 +251,7 @@ export function pantallaResultadoMcb() {
   }
   const r = estado.resultado;
   if (!r) {
-    location.hash = '#/me-cae-bien';
+    irA('#/me-cae-bien');
     return '<div class="pantalla"></div>';
   }
   const noAptas = r.restricciones.filter((x) => x.estado === 'no_apto').map((x) => nombreRestriccion(x.clave));
@@ -295,7 +295,7 @@ export function accionMeCaeBien(boton, redibujar) {
     estado = nuevoEstado();
     estado.modo = 'mio';
     estado.restricciones = restriccionesDelPerfil(leerPerfil());
-    location.hash = '#/me-cae-bien/escanear';
+    irA('#/me-cae-bien/escanear');
     return true;
   }
   if (accion === 'mcb-alternar') {

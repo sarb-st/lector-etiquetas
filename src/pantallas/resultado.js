@@ -13,12 +13,13 @@ import {
 import { buscarEnOpenFoodFacts } from '../datos/open-food-facts.js';
 import { buscarEnHistorial, actualizarFicha, actualizarEntrada, leerPerfil } from '../datos/almacen.js';
 import { CATEGORIAS } from '../puntaje/reglas.js';
-import { leerClave } from './ajustes.js';
+import { leerClave, leerAjustes } from './ajustes.js';
+import { hayAportePendiente } from '../datos/subir-off.js';
 import { reescribirTextos, escribiendo } from '../ia/analisis.js';
 import { restriccionesDelPerfil } from '../ia/chequeo.js';
 import { porcionDe } from '../puntaje/derivados.js';
 import { partesAzucar, partesGrasa, cucharaditas } from '../puntaje/composicion.js';
-import { tipoSugerencia, mejorasSugeridas } from '../puntaje/sugerencia.js';
+import { tipoSugerencia, mejorasSugeridas, referenciasSugerencia } from '../puntaje/sugerencia.js';
 import { htmlRestricciones, nombreRestriccion } from './me-cae-bien.js';
 import { CAPITULO_DE, hrefCapitulo, capituloDelResultado } from '../guia/guia.js';
 
@@ -39,10 +40,28 @@ function cabecera(entrada, textos) {
         ${n?.kcal != null ? `<p class="meta">${esc(unidad)} · ${esc(numero(n.kcal, 0))} ${esc(t('resultado.kcal'))}</p>` : ''}
       </div>
     </div>
-    ${marcaFuente(entrada)}`;
+    ${marcaFuente(entrada)}
+      ${bloqueOFF(entrada)}`;
 }
 
 // Si los datos vienen de Open Food Facts, se dice y se ofrece confirmarlos con fotos.
+// Open Food Facts: la primera vez se pregunta si se comparte; después, cómo salió.
+function bloqueOFF(entrada) {
+  if (hayAportePendiente(entrada.id) && !leerAjustes().offPreguntado) {
+    return `
+      <section class="pregunta-off">
+        <p><strong>${esc(t('resultado.offPreguntaTitulo'))}</strong> ${esc(t('resultado.offPregunta'))}</p>
+        <div class="botones">
+          <button type="button" class="boton-principal chico tocable" data-accion="off-si">${esc(t('resultado.offSi'))}</button>
+          <button type="button" class="boton-pastilla tocable" data-accion="off-no">${esc(t('resultado.offNo'))}</button>
+        </div>
+      </section>`;
+  }
+  const estado = entrada.compartidoOFF;
+  if (!estado) return '';
+  return `<p class="marca-fuente estado-off">${icono(estado === 'error' ? 'info' : 'tilde', 'sm')}<span>${esc(t(`resultado.off_${estado}`))}</span></p>`;
+}
+
 function marcaFuente(entrada) {
   if (entrada.fuente === 'bls') {
     return `
@@ -216,8 +235,19 @@ function deUnVistazo(resultado) {
     <div class="grupos-chips">${grupos}</div>`;
 }
 
-// "Qué buscar" armado con las etiquetas del producto, para cuando no hay texto escrito.
-function textoBuscarGenerico(resultado) {
+// "Qué buscar" armado con los datos, para cuando no hay texto escrito. Con referencias de la
+// categoría, con números del súper; si no, con las etiquetas del producto.
+function textoBuscarGenerico(resultado, ficha) {
+  const criterios = referenciasSugerencia(ficha, resultado, leerPerfil());
+  if (criterios.length) {
+    const decimales = (n) => (n === 'kcal' ? 0 : n === 'sal' ? 2 : 1);
+    const partes = criterios.map((c) => t(`resultado.ref_${c.mejora}`, { x: numero(c.meta, decimales(c.nutriente)) }));
+    return t('resultado.buscarReferencia', {
+      criterios: partes.join(t('resultado.y')),
+      unidad: ficha.esBebida ? 'ml' : 'g',
+      categoria: t(`categorias.${ficha.categoria}`),
+    });
+  }
   const mejoras = mejorasSugeridas(resultado).map((m) => t(`resultado.mejora_${m}`));
   if (mejoras.length === 0) return t('resultado.buscarSinDatos', { nota: resultado.nota });
   return t('resultado.buscarGenerico', { mejoras: mejoras.join(t('resultado.y')) });
@@ -225,7 +255,7 @@ function textoBuscarGenerico(resultado) {
 
 // Cierre de la pantalla principal: qué buscar en su lugar o, si el producto ya es
 // una buena elección, que lo diga (definición, sección 7.2).
-function bloqueSugerencia(textos, resultado) {
+function bloqueSugerencia(textos, resultado, ficha) {
   // Qué bloque va lo decide la nota: menos de 8, recomendar; 8 o más, felicitar.
   const tipo = tipoSugerencia(resultado.nota);
   if (!tipo) return '';
@@ -234,7 +264,7 @@ function bloqueSugerencia(textos, resultado) {
   if (typeof sugerencia === 'string') sugerencia = { tipo: 'buscar', texto: sugerencia };
   // Si el texto guardado no corresponde al tipo decidido (o falta), se arma uno con los datos.
   if (!sugerencia?.texto || sugerencia.tipo !== tipo) {
-    sugerencia = { tipo, texto: tipo === 'ya_es_bueno' ? t('resultado.yaEsBuenoGenerico') : textoBuscarGenerico(resultado) };
+    sugerencia = { tipo, texto: tipo === 'ya_es_bueno' ? t('resultado.yaEsBuenoGenerico') : textoBuscarGenerico(resultado, ficha) };
   }
 
   const esBueno = sugerencia.tipo === 'ya_es_bueno';
@@ -575,7 +605,7 @@ export function pantallaResultado(id) {
       ${deUnVistazo(resultado)}
       ${sirvePara(resultado)}
       ${cuando(textos)}
-      ${bloqueSugerencia(textos, resultado)}
+      ${bloqueSugerencia(textos, resultado, entrada.ficha)}
       ${resultado.nota === null ? '' : '<div class="centinela-analisis" aria-hidden="true"></div>'}
     </div>
     ${resultado.nota === null ? '' : analisisCompleto(resultado, textos, entrada.ficha)}`;

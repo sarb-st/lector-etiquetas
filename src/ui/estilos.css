@@ -3895,3 +3895,50 @@ select.campo-texto {
   font-size: 12px;
   color: var(--ink-2);
 }
+
+.borrar-busqueda {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.borrar-busqueda[hidden] {
+  display: none;
+}
+
+/* Ilustraciones de los alimentos sin código (BLS), en lugar de la foto. */
+.ilustrada {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+.ilustrada .ilustracion {
+  width: 76%;
+  height: 76%;
+}
+
+/* ---------- Pregunta de Open Food Facts ---------- */
+
+.pregunta-off {
+  margin: var(--s-3) 0;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--brand-tint);
+  color: var(--on-brand-tint);
+}
+
+.pregunta-off p {
+  margin: 0 0 var(--s-3);
+}
+
+.pregunta-off .botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}

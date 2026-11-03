@@ -15,9 +15,10 @@ import {
   enviarEnvase,
   escribirTextosDe,
 } from './pantallas/resultado.js';
+import { compartirConOFF, descartarAporte } from './datos/subir-off.js';
 import { pantallaPreguntas, pantallaEditarPregunta, accionPreguntas, entradaPreguntas } from './pantallas/preguntas.js';
 import { pantallaPerfil } from './pantallas/perfil.js';
-import { pantallaAjustes, accionAjustes, enviarFormularioAjustes } from './pantallas/ajustes.js';
+import { pantallaAjustes, accionAjustes, enviarFormularioAjustes, responderCompartirOFF } from './pantallas/ajustes.js';
 import { pantallaMisProductos, quitarDeMisProductos } from './pantallas/mis-productos.js';
 import { leerPerfil, leerHistorial, buscarEnHistorial } from './datos/almacen.js';
 import { pantallaComparar, pantallaElegir, ponerEnCasilla, montarComparar } from './pantallas/comparar.js';
@@ -45,6 +46,7 @@ import {
   accionAnalizar,
   enviarCodigo,
 } from './pantallas/analizar.js';
+import { irA, rutaActual } from './ui/rutas.js';
 
 const raiz = document.getElementById('app');
 const tabbar = document.getElementById('tabbar');
@@ -119,11 +121,11 @@ function dibujarTabbar(activa) {
 function navegar({ mantenerScroll = false } = {}) {
   // Por si se sale con el análisis completo abierto.
   document.body.style.overflow = '';
-  const ruta = location.hash.replace(/^#/, '') || '/';
+  const ruta = rutaActual();
 
   // La primera vez: las preguntas mínimas antes de empezar.
   if (ruta === '/' && !leerPerfil() && leerHistorial().length === 0) {
-    location.hash = '#/preguntas/inicio/1';
+    irA('#/preguntas/inicio/1');
     return;
   }
 
@@ -145,7 +147,7 @@ function navegar({ mantenerScroll = false } = {}) {
       return;
     }
   }
-  location.hash = '#/';
+  irA('#/');
 }
 
 const redibujar = () => navegar({ mantenerScroll: true });
@@ -188,6 +190,12 @@ document.addEventListener('click', async (evento) => {
     hoja.showModal();
   } else if (accion === 'cerrar-hoja') {
     hoja.close();
+  } else if (accion === 'off-si' || accion === 'off-no') {
+    const id = raiz.querySelector('[data-id]')?.dataset.id;
+    responderCompartirOFF(accion === 'off-si');
+    if (accion === 'off-si') compartirConOFF(id);
+    else descartarAporte(id);
+    redibujar();
   } else if (accion === 'escribir-textos') {
     await escribirTextosDe(raiz.querySelector('[data-id]')?.dataset.id, boton);
     redibujar();
@@ -260,9 +268,19 @@ hoja.addEventListener('close', () => {
   hoja.innerHTML = '';
 });
 
-window.addEventListener('hashchange', () => {
+// Cambio de pantalla (ver ui/rutas.js): la dirección de la página no cambia.
+window.addEventListener('cambio-de-ruta', () => {
   if (hoja.open) hoja.close();
   navegar();
+});
+
+// Los enlaces de la app (href="#/...") cambian de pantalla sin tocar la dirección.
+document.addEventListener('click', (evento) => {
+  const enlace = evento.target.closest('a[href^="#/"]');
+  if (!enlace || evento.defaultPrevented || evento.metaKey || evento.ctrlKey) return;
+  evento.preventDefault();
+  if (enlace.getAttribute('aria-disabled') === 'true') return;
+  irA(enlace.getAttribute('href'));
 });
 
 // Bienvenida: la primera vez dura un poco más y saluda; después es un guiño corto.

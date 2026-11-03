@@ -55,6 +55,13 @@ export default {
   },
 
   resultado: {
+    offPreguntaTitulo: 'Share this product with Open Food Facts?',
+    offPregunta: 'It is the open database this app uses: the next person who scans it will find it right away. Only the package photos and the data read are uploaded, nothing about you. You can change this in Settings.',
+    offSi: 'Share',
+    offNo: 'Don’t share',
+    off_subiendo: 'Sharing with Open Food Facts…',
+    off_si: 'Shared with Open Food Facts. Thank you!',
+    off_error: 'Could not share with Open Food Facts.',
     datosBLS: 'Official data from the BLS (German food database).',
     datosBLSEstimado: 'Official BLS data. Processing is estimated from the type of food: the label or the counter may say otherwise.',
     sinListaRestricciones: 'Without an ingredient list I can’t check allergens or intolerances. Check the label or ask at the counter.',
@@ -111,6 +118,14 @@ export default {
     sugerencia: 'What to look for instead',
     yaEsBueno: 'Good choice',
     yaEsBuenoGenerico: 'This is already a good choice: no need to look for another one.',
+    buscarReferencia: 'Look for one with {criterios} per 100 {unidad}: that is the best 25 % of “{categoria}” in German supermarkets.',
+    ref_menos_azucar: 'less than {x} g of sugar',
+    ref_menos_saturadas: 'less than {x} g of saturated fat',
+    ref_menos_sal: 'less than {x} g of salt',
+    ref_menos_grasa: 'less than {x} g of fat',
+    ref_menos_calorias: 'fewer than {x} calories',
+    ref_mas_proteina: 'more than {x} g of protein',
+    ref_mas_fibra: 'more than {x} g of fibre',
     buscarGenerico: 'Look for one with {mejoras} per 100 g. Compare the labels on the shelf.',
     buscarSinDatos: 'With a score of {nota} there are better options: compare with another one of the same kind.',
     y: ' and ',
@@ -210,6 +225,7 @@ export default {
   },
 
   buscar: {
+    borrar: 'Clear the search',
     titulo: 'Look up a food',
     bajada: 'For things without a barcode: fruit, vegetables, meat, fish, bakery bread, cheese or deli counter.',
     campo: 'Food name',

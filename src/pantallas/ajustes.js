@@ -10,7 +10,7 @@ export const MODELOS = {
   economico: { id: 'claude-haiku-5-5', costoAnalisisCentimos: 0.2 },
 };
 
-const AJUSTES_INICIALES = { modelo: 'preciso', compartirOFF: true };
+const AJUSTES_INICIALES = { modelo: 'preciso', compartirOFF: true, offPreguntado: false };
 
 export function leerAjustes() {
   return { ...AJUSTES_INICIALES, ...(leer('ajustes') ?? {}) };
@@ -18,6 +18,11 @@ export function leerAjustes() {
 
 function guardarAjustes(cambios) {
   guardar('ajustes', { ...leerAjustes(), ...cambios });
+}
+
+// La respuesta a "¿Compartir con Open Food Facts?" (se pregunta una sola vez).
+export function responderCompartirOFF(si) {
+  guardarAjustes({ compartirOFF: si, offPreguntado: true });
 }
 
 export function leerClave() {
@@ -219,7 +224,7 @@ export function accionAjustes(boton, redibujar) {
   } else if (accion === 'elegir-idioma') {
     cambiarIdioma(boton.dataset.idioma);
   } else if (accion === 'alternar-off') {
-    guardarAjustes({ compartirOFF: !leerAjustes().compartirOFF });
+    guardarAjustes({ compartirOFF: !leerAjustes().compartirOFF, offPreguntado: true });
   } else {
     return false;
   }

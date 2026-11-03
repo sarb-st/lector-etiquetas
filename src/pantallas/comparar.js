@@ -11,6 +11,7 @@ import { esc, claseBanda, iconoLinea, resultadoActual, fotoProducto, filaProduct
 import { leerPerfil, leerHistorial, buscarEnHistorial } from '../datos/almacen.js';
 import { comparar } from '../puntaje/comparar.js';
 import { hrefCapitulo } from '../guia/guia.js';
+import { reemplazarRuta } from '../ui/rutas.js';
 
 const casillas = { a: null, b: null };
 // Datos educativos ya pedidos, para no volver a pagar por el mismo par de productos.
@@ -42,7 +43,7 @@ export async function montarComparar(raiz) {
 // Pone el producto en la casilla y deja la dirección en "#/comparar" (sin sumar un paso al "atrás").
 export function ponerEnCasilla(lugar, id) {
   if (buscarEnHistorial(id)) casillas[lugar] = id;
-  history.replaceState(null, '', '#/comparar');
+  reemplazarRuta('#/comparar');
   return pantallaComparar();
 }
 

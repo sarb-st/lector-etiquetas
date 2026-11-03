@@ -9,6 +9,7 @@ import { icono } from '../ui/iconos.js';
 import { esc } from '../ui/comunes.js';
 import { leerPerfil, guardarPerfil } from '../datos/almacen.js';
 import { PASOS, GRUPOS, paso as buscarPaso, bloqueVisible, pasosFaltantes } from '../perfil/preguntas.js';
+import { irA } from '../ui/rutas.js';
 
 const VALORES_INICIALES = { alimentacion: 'todo', exigencia: 'equilibrada' };
 
@@ -240,11 +241,11 @@ export function accionPreguntas(boton, raiz) {
   if (accion === 'preguntas-siguiente') {
     guardarBorrador(sesion.pasos[indice]);
     if (indice < sesion.pasos.length - 1) {
-      location.hash = rutaPaso(indice + 1);
+      irA(rutaPaso(indice + 1));
     } else {
       const destino = destinoFinal(sesion.grupo);
       sesion = null;
-      location.hash = destino;
+      irA(destino);
     }
     return true;
   }
@@ -255,7 +256,7 @@ export function accionPreguntas(boton, raiz) {
   if (accion === 'preguntas-cerrar') {
     const destino = destinoFinal(sesion.grupo);
     sesion = null;
-    location.hash = destino;
+    irA(destino);
     return true;
   }
   return false;

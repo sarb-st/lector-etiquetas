@@ -4,6 +4,7 @@ import { t } from '../i18n/index.js';
 import { analizar } from '../puntaje/index.js';
 import { leerPerfil } from '../datos/almacen.js';
 import { icono } from './iconos.js';
+import { ilustracionDeEntrada, svgIlustracion } from './ilustraciones.js';
 
 // La nota se recalcula al mostrarla, con el perfil y las reglas actuales.
 // Mismos datos, mismo resultado: es instantáneo y no gasta nada.
@@ -24,6 +25,9 @@ export function esc(valor) {
 // Foto chiquita del producto. Debajo queda la inicial del nombre: si no hay foto,
 // o si la foto no carga (sin internet), se ve la inicial.
 export function fotoProducto(entrada, clase = 'producto-foto') {
+  // Alimentos sin código (BLS): una ilustración en lugar de la foto.
+  const ilustracion = ilustracionDeEntrada(entrada);
+  if (ilustracion) return `<span class="${clase} ilustrada" aria-hidden="true">${svgIlustracion(ilustracion)}</span>`;
   const inicial = entrada?.ficha?.nombre?.trim()?.[0] ?? '?';
   const imagen = entrada?.imagen
     ? `<img src="${esc(entrada.imagen)}" alt="" decoding="async" referrerpolicy="no-referrer" />`

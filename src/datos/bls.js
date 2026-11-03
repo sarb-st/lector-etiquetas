@@ -4,6 +4,8 @@
 // la ficha queda marcada con ingredientesEstimados: no se afirma "sin azúcar agregado" ni se
 // revisan alérgenos sobre esa lista. Ver docs/reglamento-puntaje.md, "Alimentos sin código".
 
+import { ilustracionDe } from '../ui/ilustraciones.js';
+
 const ing = (texto, tipo, ultra = false) => ({ texto, traduccion: texto, tipo, ultra });
 
 // Cómo se arma la lista de ingredientes de cada tipo. estimado: es una suposición.
@@ -92,6 +94,7 @@ export function fichaDesdeBLS(a) {
     pescadoAzul: a.cat === 'pescados' && (a.x?.FAPUN3 ?? 0) >= OMEGA3_PESCADO_AZUL,
     tipoAceite: null,
     micronutrientes: a.x ?? {},
+    ilustracion: ilustracionDe(a.c, a.de, a.cat),
     bls: { codigo: a.c, nombreAleman: a.de },
   };
 }

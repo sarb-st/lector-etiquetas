@@ -6,11 +6,13 @@ import { icono } from '../ui/iconos.js';
 import { logoAnimado } from '../ui/logo.js';
 import { esc } from '../ui/comunes.js';
 import { leerPerfil, buscarEnHistorial } from '../datos/almacen.js';
-import { leerClave } from './ajustes.js';
+import { leerClave, leerAjustes } from './ajustes.js';
 import { grupoRespondido } from '../perfil/preguntas.js';
 import { buscarEnOpenFoodFacts } from '../datos/open-food-facts.js';
 import { prepararFoto } from '../datos/fotos.js';
 import { analizarProducto } from '../ia/analisis.js';
+import { irA, enRuta, redibujarRuta } from '../ui/rutas.js';
+import { aporteParaOFF, cuentaLista, guardarAportePendiente, compartirConOFF } from '../datos/subir-off.js';
 
 const URL_ZXING = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/+esm';
 
@@ -32,6 +34,8 @@ function nuevoEstado() {
     pregunta: null,
     fichaElegida: null,
     fuente: null,
+    // Lo que Open Food Facts ya tenía del producto (para subir solo lo que falta).
+    offPrevio: null,
   };
 }
 
@@ -43,7 +47,7 @@ export function empezarReescaneo(entrada) {
   estado.codigo = entrada.codigo ?? null;
   estado.reemplazarId = entrada.id;
   estado.aviso = 'reescaneo';
-  location.hash = '#/analizar/fotos';
+  irA('#/analizar/fotos');
 }
 
 function barra(volver = '#/') {
@@ -83,7 +87,7 @@ export function pantallaEscanear(lugar = null) {
   paraComparar = lugar;
   const r = requisitos();
   if (r?.ir) {
-    location.hash = r.ir;
+    irA(r.ir);
     return '<div class="pantalla"></div>';
   }
   if (r?.html) return r.html;
@@ -165,10 +169,11 @@ async function usarCodigo(codigo) {
   }
   // 2. Open Food Facts.
   estado.paso = 'buscando';
-  location.hash = '#/analizar/procesando';
+  irA('#/analizar/procesando');
   const encontrado = await buscarEnOpenFoodFacts(limpio);
   if (encontrado?.completo) {
     estado.off = encontrado.datos;
+    estado.offPrevio = encontrado.datos;
     await correrAnalisis();
     return;
   }
@@ -176,7 +181,7 @@ async function usarCodigo(codigo) {
   //    (sin saltar de golpe del escaneo a la cámara de fotos).
   estado.aviso = encontrado ? 'incompleto' : 'noEncontrado';
   estado.paso = 'sinDatos';
-  window.dispatchEvent(new HashChangeEvent('hashchange'));
+  redibujarRuta();
 }
 
 // ---------- Fotos ----------
@@ -215,7 +220,7 @@ function tarjetaFoto(clave, numero, opcional = false) {
 export function pantallaFotos() {
   const r = requisitos();
   if (r?.ir) {
-    location.hash = r.ir;
+    irA(r.ir);
     return '<div class="pantalla"></div>';
   }
   if (r?.html) return r.html;
@@ -337,14 +342,13 @@ function listaPasos() {
 async function correrAnalisis() {
   estado.error = null;
   const redibujar = () => {
-    if (location.hash === '#/analizar/procesando') window.dispatchEvent(new HashChangeEvent('hashchange'));
-    else location.hash = '#/analizar/procesando';
+    irA('#/analizar/procesando');
   };
   // Al avanzar de paso, si ya se ve la pantalla de espera, se cambia solo la lista:
   // así la animación del logo sigue su ciclo sin volver a empezar.
   const avanzar = () => {
     const lista = document.querySelector('.procesando .pasos-analisis');
-    if (lista && location.hash === '#/analizar/procesando') lista.innerHTML = listaPasos();
+    if (lista && enRuta('#/analizar/procesando')) lista.innerHTML = listaPasos();
     else redibujar();
   };
   try {
@@ -371,6 +375,7 @@ async function correrAnalisis() {
       redibujar();
       return;
     }
+    prepararAporteOFF(r.entrada);
     estado = nuevoEstado();
     irAlResultado(r.entrada.id);
   } catch (error) {
@@ -379,14 +384,32 @@ async function correrAnalisis() {
   }
 }
 
+// Con fotos, lo leído se puede sumar a Open Food Facts. Si la persona ya dijo que sí, se sube;
+// si todavía no se le preguntó, la pantalla del resultado pregunta (ver subir-off.js).
+function prepararAporteOFF(entrada) {
+  if (entrada.fuente !== 'fotos' || !cuentaLista()) return;
+  const ajustes = leerAjustes();
+  if (ajustes.offPreguntado && !ajustes.compartirOFF) return;
+  const aporte = aporteParaOFF({
+    codigo: estado.codigo,
+    ficha: entrada.ficha,
+    fotos: estado.fotos,
+    offPrevio: estado.offPrevio,
+    corregir: Boolean(estado.reemplazarId),
+  });
+  if (!aporte) return;
+  guardarAportePendiente(entrada.id, aporte);
+  if (ajustes.offPreguntado) compartirConOFF(entrada.id);
+}
+
 function irAlResultado(id) {
   if (paraComparar) {
     const lugar = paraComparar;
     paraComparar = null;
-    location.hash = `#/comparar/${lugar}/${encodeURIComponent(id)}`;
+    irA(`#/comparar/${lugar}/${encodeURIComponent(id)}`);
     return;
   }
-  location.hash = `#/resultado/${encodeURIComponent(id)}`;
+  irA(`#/resultado/${encodeURIComponent(id)}`);
 }
 
 // Un alimento sin código elegido en "Buscar" (BLS): la ficha ya está, solo falta calcular
@@ -398,7 +421,7 @@ export function analizarAlimentoBLS(ficha, codigoBLS, lugar = null) {
   estado.fuente = 'bls';
   estado.reemplazarId = `bls-${codigoBLS}`;
   estado.paso = 'calculando';
-  location.hash = '#/analizar/procesando';
+  irA('#/analizar/procesando');
   correrAnalisis();
 }
 
@@ -410,13 +433,13 @@ export function empezarAnalisisDesde({ codigo = null, off = null, fotoIngredient
   if (off) {
     estado.off = off;
     estado.paso = 'leyendo';
-    location.hash = '#/analizar/procesando';
+    irA('#/analizar/procesando');
     correrAnalisis();
     return;
   }
   if (fotoIngredientes) estado.fotos.ingredientes = fotoIngredientes;
   estado.aviso = 'faltaTabla';
-  location.hash = '#/analizar/fotos';
+  irA('#/analizar/fotos');
 }
 
 // ---------- Acciones ----------

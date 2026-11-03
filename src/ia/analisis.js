@@ -9,7 +9,7 @@ import { idioma } from '../i18n/index.js';
 import { chequear, restriccionesDelPerfil, textoDeFicha } from './chequeo.js';
 import { miniatura } from '../datos/fotos.js';
 import { capituloDelResultado, capituloDeComparacion, capituloParaIA, pedidoDatoDesdeGuia } from '../guia/guia.js';
-import { tipoSugerencia } from '../puntaje/sugerencia.js';
+import { tipoSugerencia, referenciasSugerencia } from '../puntaje/sugerencia.js';
 
 const NOMBRE_IDIOMA = { es: 'español', en: 'inglés' };
 
@@ -116,6 +116,7 @@ export async function escribirTextos(ficha, resultado, perfil) {
       deUnVistazo: resultado.deUnVistazo,
       sirvePara: resultado.sirvePara,
       tipoSugerencia: tipoSugerencia(resultado.nota),
+      referenciasSugerencia: referenciasSugerencia(ficha, resultado, perfil),
       porQueEsaNota: resultado.explicacion,
     },
     perfil: perfilParaTextos(perfil),

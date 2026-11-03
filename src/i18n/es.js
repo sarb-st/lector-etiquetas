@@ -56,6 +56,13 @@ export default {
   },
 
   resultado: {
+    offPreguntaTitulo: '¿Compartir este producto con Open Food Facts?',
+    offPregunta: 'Es la base abierta que usa esta app: así el próximo que lo escanee lo encuentra al instante. Solo se suben las fotos del envase y los datos leídos, nada tuyo. Se puede cambiar en Ajustes.',
+    offSi: 'Compartir',
+    offNo: 'No compartir',
+    off_subiendo: 'Compartiendo con Open Food Facts…',
+    off_si: 'Compartido con Open Food Facts. ¡Gracias!',
+    off_error: 'No se pudo compartir con Open Food Facts.',
     datosBLS: 'Datos oficiales del BLS (base alemana de alimentos).',
     datosBLSEstimado: 'Datos oficiales del BLS. El procesamiento se estima por el tipo de alimento: la etiqueta o el mostrador pueden decir otra cosa.',
     sinListaRestricciones: 'Sin lista de ingredientes no puedo revisar alérgenos ni intolerancias. Mirá la etiqueta o preguntá en el mostrador.',
@@ -112,6 +119,14 @@ export default {
     sugerencia: 'Qué buscar en su lugar',
     yaEsBueno: 'Buena elección',
     yaEsBuenoGenerico: 'Este ya es una buena elección: no hace falta buscar otro.',
+    buscarReferencia: 'Buscá uno con {criterios} cada 100 {unidad}: así está el 25 % mejor de «{categoria}» en el súper alemán.',
+    ref_menos_azucar: 'menos de {x} g de azúcar',
+    ref_menos_saturadas: 'menos de {x} g de grasas saturadas',
+    ref_menos_sal: 'menos de {x} g de sal',
+    ref_menos_grasa: 'menos de {x} g de grasa',
+    ref_menos_calorias: 'menos de {x} calorías',
+    ref_mas_proteina: 'más de {x} g de proteína',
+    ref_mas_fibra: 'más de {x} g de fibra',
     buscarGenerico: 'Buscá uno con {mejoras} cada 100 g. Compará las etiquetas en la góndola.',
     buscarSinDatos: 'Con nota {nota} hay opciones mejores: compará con otro de la misma categoría.',
     y: ' y ',
@@ -213,6 +228,7 @@ export default {
   },
 
   buscar: {
+    borrar: 'Borrar la búsqueda',
     titulo: 'Buscar un alimento',
     bajada: 'Para lo que no tiene código: fruta, verdura, carne, pescado, pan de panadería, queso o fiambre al corte.',
     campo: 'Nombre del alimento',

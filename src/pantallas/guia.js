@@ -8,6 +8,7 @@ import { t, idioma } from '../i18n/index.js';
 import { icono } from '../ui/iconos.js';
 import { esc } from '../ui/comunes.js';
 import { NIVELES_GUIA, nivelDelUsuario, cargarGuias, guiasCargadas, markdownAHtml } from '../guia/guia.js';
+import { redibujarRuta, reemplazarRuta } from '../ui/rutas.js';
 
 function cargando() {
   return `<div class="pantalla"><p class="ayuda-bloque guia-cargando">${esc(t('guia.cargando'))}</p></div>`;
@@ -17,7 +18,7 @@ function cargando() {
 export async function montarGuia() {
   if (guiasCargadas()) return;
   await cargarGuias();
-  window.dispatchEvent(new HashChangeEvent('hashchange'));
+  redibujarRuta();
 }
 
 const avisoIdioma = () =>
@@ -67,7 +68,7 @@ export function pantallaCapitulo(nivel, numero) {
   const i = lista.findIndex((c) => c.n === Number(numero));
   // Si el capítulo no existe en este nivel (por ejemplo, el 12 fuera de Experto), al índice del nivel.
   if (i < 0) {
-    history.replaceState(null, '', `#/guia/${nivel}`);
+    reemplazarRuta(`#/guia/${nivel}`);
     return pantallaGuia(nivel);
   }
   const c = lista[i];

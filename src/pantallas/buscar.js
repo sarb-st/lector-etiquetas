@@ -7,6 +7,7 @@ import { t, numero } from '../i18n/index.js';
 import { icono } from '../ui/iconos.js';
 import { esc } from '../ui/comunes.js';
 import { cargarBLS, blsCargado, buscarEn, buscarPorCodigo, fichaDesdeBLS } from '../datos/bls.js';
+import { ilustracionDe, svgIlustracion } from '../ui/ilustraciones.js';
 import { analizarAlimentoBLS } from './analizar.js';
 
 let textoBuscado = '';
@@ -18,6 +19,7 @@ function filas(resultados) {
     .map(
       (a) => `
       <li><button type="button" class="fila-bls tocable" data-accion="elegir-bls" data-codigo="${esc(a.c)}">
+        <span class="foto-mini ilustrada" aria-hidden="true">${svgIlustracion(ilustracionDe(a.c, a.de, a.cat))}</span>
         <span class="texto">
           <span class="nombre">${esc(a.es)}</span>
           <span class="detalle">${esc(t(`categorias.${a.cat}`))} · ${esc(numero(a.n[0], 0))} kcal</span>
@@ -28,7 +30,9 @@ function filas(resultados) {
     .join('')}</ul>`;
 }
 
+// Cada vez que se entra, la búsqueda empieza vacía.
 export function pantallaBuscar(lugar = null) {
+  textoBuscado = '';
   const lista = blsCargado();
   const volver = lugar ? `#/analizar/comparar/${lugar}` : '#/analizar';
   return `
@@ -44,6 +48,7 @@ export function pantallaBuscar(lugar = null) {
         <span class="visualmente-oculto">${esc(t('buscar.campo'))}</span>
         <input type="search" class="campo-texto" data-buscar-bls value="${esc(textoBuscado)}"
           placeholder="${esc(t('buscar.ejemplo'))}" autocomplete="off" enterkeyhint="search" />
+        <button type="button" class="borrar-busqueda tocable" data-accion="borrar-busqueda" aria-label="${esc(t('buscar.borrar'))}" hidden>${icono('cruz', 'sm')}</button>
       </label>
       <div class="resultados-bls" aria-live="polite">
         ${lista ? filas(buscarEn(lista, textoBuscado)) : `<p class="ayuda-bloque">${esc(t('buscar.cargando'))}</p>`}
@@ -66,6 +71,8 @@ export async function montarBuscar(raiz) {
 export function entradaBuscar(campo) {
   if (!campo.matches('[data-buscar-bls]')) return false;
   textoBuscado = campo.value;
+  const borrar = document.querySelector('.borrar-busqueda');
+  if (borrar) borrar.hidden = !textoBuscado;
   const lista = blsCargado();
   const caja = document.querySelector('.resultados-bls');
   if (lista && caja) caja.innerHTML = filas(buscarEn(lista, textoBuscado));
@@ -73,6 +80,13 @@ export function entradaBuscar(campo) {
 }
 
 export function accionBuscar(boton) {
+  if (boton.dataset.accion === 'borrar-busqueda') {
+    const campo = document.querySelector('[data-buscar-bls]');
+    campo.value = '';
+    entradaBuscar(campo);
+    campo.focus();
+    return true;
+  }
   if (boton.dataset.accion !== 'elegir-bls') return false;
   const alimento = buscarPorCodigo(blsCargado() ?? [], boton.dataset.codigo);
   if (!alimento) return true;
