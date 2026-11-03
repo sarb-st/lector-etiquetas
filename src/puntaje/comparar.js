@@ -1,5 +1,8 @@
 // Comparación de dos productos (definición, sección 7.1). La decide el código, no la IA.
 //
+// 0. Si ninguna diferencia entre los dos pasa las tolerancias legales de etiquetado de la UE
+//    (y tienen el mismo procesamiento y azúcar agregado), es empate técnico: con la etiqueta
+//    no se pueden distinguir, aunque las notas sean distintas.
 // 1. Gana la mejor línea de objetivo (Suma, después Moderación, después Resta).
 // 2. Con la misma línea, gana la nota más alta si la diferencia es de 2 puntos o más.
 // 3. Si están a 1 punto o menos es "empate técnico": se desempata con el aspecto que más
@@ -7,29 +10,52 @@
 
 import { analizar } from './index.js';
 import { derivar } from './derivados.js';
-import { ASPECTOS } from './reglas.js';
+import { ASPECTOS, TOLERANCIAS_UE, DIFERENCIA_CALORIAS } from './reglas.js';
 
 const RANGO_LINEA = { suma: 2, moderacion: 1, resta: 0 };
 const DIFERENCIA_NOTA_CLARA = 2;
 
-// Una diferencia es real si pasa un mínimo en gramos y además es al menos del 10 %.
-const DIFERENCIA_RELATIVA = 0.1;
-
-function diferenciaReal(a, b, minimo) {
-  if (a == null || b == null) return false;
-  const d = Math.abs(a - b);
-  return d >= minimo && d >= DIFERENCIA_RELATIVA * Math.max(Math.abs(a), Math.abs(b));
+// Tolerancia legal para un valor (gramos cada 100 g). Ver TOLERANCIAS_UE en reglas.js.
+export function tolerancia(nutriente, valor) {
+  const tramo = TOLERANCIAS_UE[nutriente].find((t) => valor < t.hasta);
+  return tramo.gramos ?? tramo.parte * valor;
 }
 
-// "Si buscás…": criterio, de dónde sale el valor, si gana el mayor o el menor, y la diferencia mínima.
+// Una diferencia es real si es mayor que la tolerancia del valor más alto de los dos.
+// Las calorías, que no tienen tolerancia propia, con al menos 10 kcal y un 10 %.
+export function diferenciaReal(nutriente, a, b) {
+  if (a == null || b == null) return false;
+  const d = Math.abs(a - b);
+  const mayor = Math.max(a, b);
+  if (nutriente === 'kcal') return d >= DIFERENCIA_CALORIAS.minimo && d >= DIFERENCIA_CALORIAS.parte * mayor;
+  return d > tolerancia(nutriente, mayor);
+}
+
+const NUTRIENTES = ['kcal', 'grasa', 'saturadas', 'carbohidratos', 'azucares', 'fibra', 'proteina', 'sal'];
+
+// ¿Se pueden distinguir con la etiqueta? Sí, si algún nutriente difiere más que la
+// tolerancia, o si cambia algo que sale de los ingredientes (procesamiento, azúcar agregado).
+function distinguibles(fichaA, fichaB) {
+  const na = fichaA.nutrientes ?? {};
+  const nb = fichaB.nutrientes ?? {};
+  if (NUTRIENTES.some((x) => diferenciaReal(x, na[x], nb[x]))) return true;
+  const da = derivar(fichaA);
+  const db = derivar(fichaB);
+  if (da.procesamiento && db.procesamiento && da.procesamiento !== db.procesamiento) return true;
+  const aa = da.azucarAgregado.hay;
+  const ab = db.azucarAgregado.hay;
+  return aa != null && ab != null && aa !== ab;
+}
+
+// "Si buscás…": criterio, qué nutriente mira y si gana el mayor o el menor.
 const CRITERIOS = [
-  { clave: 'masProteina', valor: (n) => n.proteina, mejor: 'mayor', minimo: 1 },
-  { clave: 'menosCalorias', valor: (n) => n.kcal, mejor: 'menor', minimo: 10 },
-  { clave: 'masSaciedad', valor: null, mejor: 'mayor', minimo: 0 },
-  { clave: 'menosGrasa', valor: (n) => n.grasa, mejor: 'menor', minimo: 1 },
-  { clave: 'menosAzucar', valor: (n) => n.azucares, mejor: 'menor', minimo: 1 },
-  { clave: 'masFibra', valor: (n) => n.fibra, mejor: 'mayor', minimo: 1 },
-  { clave: 'menosSal', valor: (n) => n.sal, mejor: 'menor', minimo: 0.1 },
+  { clave: 'masProteina', nutriente: 'proteina', mejor: 'mayor' },
+  { clave: 'menosCalorias', nutriente: 'kcal', mejor: 'menor' },
+  { clave: 'masSaciedad', nutriente: null, mejor: 'mayor' },
+  { clave: 'menosGrasa', nutriente: 'grasa', mejor: 'menor' },
+  { clave: 'menosAzucar', nutriente: 'azucares', mejor: 'menor' },
+  { clave: 'masFibra', nutriente: 'fibra', mejor: 'mayor' },
+  { clave: 'menosSal', nutriente: 'sal', mejor: 'menor' },
 ];
 
 // Saciedad: primero la etiqueta "Saciedad"; si las dos la tienen o ninguna,
@@ -54,13 +80,18 @@ function siBuscas(fichaA, fichaB, ra, rb) {
     let b;
     let real;
     if (c.clave === 'masSaciedad') {
+      // Cuenta solo si cambia algo que se puede distinguir: proteína, fibra o calorías.
       a = indiceSaciedad(fichaA, ra);
       b = indiceSaciedad(fichaB, rb);
-      real = diferenciaReal(a, b, 0.5);
+      real =
+        a != null &&
+        b != null &&
+        Math.abs(a - b) >= 0.5 &&
+        ['proteina', 'fibra', 'kcal'].some((x) => diferenciaReal(x, na[x], nb[x]));
     } else {
-      a = c.valor(na);
-      b = c.valor(nb);
-      real = diferenciaReal(a, b, c.minimo);
+      a = na[c.nutriente];
+      b = nb[c.nutriente];
+      real = diferenciaReal(c.nutriente, a, b);
     }
     if (real) lineas.push({ criterio: c.clave, ganador: quienGana(a, b, c.mejor) });
   }
@@ -98,6 +129,8 @@ export function comparar(fichaA, fichaB, perfil) {
   let decision;
   if (ra.nota == null || rb.nota == null) {
     decision = { ganador: null, motivo: { tipo: 'sin_nota' }, empateTecnico: false };
+  } else if (!distinguibles(fichaA, fichaB)) {
+    decision = { ganador: 'empate', motivo: { tipo: 'indistinguibles' }, empateTecnico: true };
   } else if (RANGO_LINEA[ra.linea] !== RANGO_LINEA[rb.linea]) {
     decision = {
       ganador: RANGO_LINEA[ra.linea] > RANGO_LINEA[rb.linea] ? 'a' : 'b',

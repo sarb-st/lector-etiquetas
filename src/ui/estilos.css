@@ -3529,3 +3529,239 @@ select.campo-texto {
     transition-duration: 1ms !important;
   }
 }
+
+/* ---------- Guía ---------- */
+
+.pantalla-guia .titulo-pantalla {
+  margin-top: var(--s-4);
+}
+
+.selector-niveles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-2);
+  margin: var(--s-4) 0 var(--s-5);
+}
+
+.nivel-guia {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 56px;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nivel-guia small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.nivel-guia[aria-current='page'] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+
+.nivel-guia[aria-current='page'] small {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.lista-capitulos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.fila-capitulo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 60px;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-decoration: none;
+}
+
+.numero-capitulo {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-tint);
+  color: var(--on-brand-tint);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.titulo-capitulo {
+  flex: 1;
+  font-weight: 600;
+}
+
+.capitulo {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.capitulo .rotulo-capitulo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-top: var(--s-3);
+}
+
+.capitulo h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: var(--s-1) 0 var(--s-4);
+}
+
+.capitulo h3 {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 var(--s-2);
+}
+
+.capitulo section {
+  margin-bottom: var(--s-5);
+}
+
+.capitulo p,
+.capitulo ul,
+.capitulo ol {
+  margin: 0 0 var(--s-3);
+}
+
+.capitulo ul,
+.capitulo ol {
+  padding-left: 1.3em;
+}
+
+.capitulo li {
+  margin-bottom: var(--s-1);
+}
+
+.capitulo .gancho p:first-child {
+  font-size: 19px;
+  line-height: 1.45;
+}
+
+.capitulo .en-etiqueta,
+.capitulo .llevas,
+.capitulo .desafio {
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+}
+
+.capitulo .en-etiqueta {
+  background: var(--surface);
+  border: 1px dashed var(--line);
+}
+
+.capitulo .llevas {
+  background: var(--brand-tint);
+  color: var(--on-brand-tint);
+}
+
+.capitulo .desafio {
+  background: var(--dark-block);
+  color: var(--on-dark-block);
+}
+
+.capitulo .llevas > :last-child,
+.capitulo .desafio > :last-child,
+.capitulo .en-etiqueta > :last-child {
+  margin-bottom: 0;
+}
+
+.capitulo .fuentes {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.tabla-guia {
+  overflow-x: auto;
+  margin: 0 0 var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.tabla-guia table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.tabla-guia th,
+.tabla-guia td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.tabla-guia th {
+  font-weight: 700;
+  background: var(--surface-2);
+}
+
+.tabla-guia tr:last-child td {
+  border-bottom: none;
+}
+
+.pasos-capitulo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+  margin: var(--s-5) 0;
+}
+
+.paso-capitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.paso-capitulo small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.paso-capitulo.siguiente {
+  text-align: right;
+}
+
+.guia-cargando {
+  margin-top: var(--s-7);
+  text-align: center;
+}
+
+.caja-dato .link-guia-dato {
+  display: inline-block;
+  margin-top: var(--s-2);
+  font-weight: 600;
+}

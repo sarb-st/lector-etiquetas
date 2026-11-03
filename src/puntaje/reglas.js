@@ -260,3 +260,21 @@ export const VISTAZO = {
   proteinaBuenaDesde: 3,
   proteinaAltaDesde: 5,
 };
+
+// --- Comparación: tolerancias legales de etiquetado de la UE -----------------------
+// Guía de la Comisión Europea (2012). Una diferencia entre dos productos cuenta solo si
+// es mayor que la tolerancia del valor más alto de los dos. Cada tramo: hasta qué valor
+// (gramos cada 100 g) vale, y la tolerancia en gramos o como parte del valor.
+export const TOLERANCIAS_UE = {
+  carbohidratos: [{ hasta: 10, gramos: 2 }, { hasta: 40, parte: 0.2 }, { hasta: Infinity, gramos: 8 }],
+  azucares: [{ hasta: 10, gramos: 2 }, { hasta: 40, parte: 0.2 }, { hasta: Infinity, gramos: 8 }],
+  proteina: [{ hasta: 10, gramos: 2 }, { hasta: 40, parte: 0.2 }, { hasta: Infinity, gramos: 8 }],
+  fibra: [{ hasta: 10, gramos: 2 }, { hasta: 40, parte: 0.2 }, { hasta: Infinity, gramos: 8 }],
+  grasa: [{ hasta: 10, gramos: 1.5 }, { hasta: 40, parte: 0.2 }, { hasta: Infinity, gramos: 8 }],
+  saturadas: [{ hasta: 4, gramos: 0.8 }, { hasta: Infinity, parte: 0.2 }],
+  sal: [{ hasta: 1.25, gramos: 0.375 }, { hasta: Infinity, parte: 0.2 }],
+};
+
+// Las calorías no tienen tolerancia propia en esa guía: cuentan con al menos
+// 10 calorías y un 10 % de diferencia.
+export const DIFERENCIA_CALORIAS = { minimo: 10, parte: 0.1 };

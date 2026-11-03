@@ -200,6 +200,19 @@ export default {
     energia_rapida: 'Sugar reaches your blood fast and muscles can use it right away.',
   },
 
+  guia: {
+    bajada: 'Short chapters, written at your level. You can also read the other levels.',
+    niveles: 'Guide levels',
+    tuNivel: 'Your level',
+    cargando: 'Loading the guide…',
+    indice: 'Back to the chapters',
+    capitulo: 'Chapter {n}',
+    anterior: 'Previous',
+    siguiente: 'Next',
+    soloEspanol: 'For now the guide is only available in Spanish.',
+    leerCapitulo: 'Read in the guide: {titulo}',
+  },
+
   construccion: {
     titulo: 'Under construction',
     texto: 'This screen is coming in the next part.',
@@ -368,6 +381,7 @@ export default {
     motivo_nota_empate: 'They’re very close ({x} versus {y}), and this one is slightly ahead.',
     motivo_aspecto: 'They’re very close, and this one wins on {aspecto}, which matters most to you.',
     motivo_empate: 'No clear difference for your profile: pick the one you like best.',
+    motivo_indistinguibles: 'The label can’t tell them apart: their differences are smaller than the margin of error the law allows on the table.',
     motivo_sin_nota: 'One of them is missing the nutrition table: I can’t decide.',
     aspecto_proteina: 'protein',
     aspecto_calorias: 'calories',

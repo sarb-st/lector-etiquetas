@@ -203,6 +203,19 @@ export default {
     energia_rapida: 'El azúcar pasa rápido a la sangre y el músculo lo puede usar enseguida.',
   },
 
+  guia: {
+    bajada: 'Capítulos cortos, escritos a tu nivel. Podés leer también los otros niveles.',
+    niveles: 'Niveles de la guía',
+    tuNivel: 'Tu nivel',
+    cargando: 'Cargando la guía…',
+    indice: 'Volver a los capítulos',
+    capitulo: 'Capítulo {n}',
+    anterior: 'Anterior',
+    siguiente: 'Siguiente',
+    soloEspanol: 'La guía por ahora está solo en español.',
+    leerCapitulo: 'Leer en la guía: {titulo}',
+  },
+
   construccion: {
     titulo: 'En construcción',
     texto: 'Esta pantalla llega en la próxima parte.',
@@ -372,6 +385,7 @@ export default {
     motivo_nota_empate: 'Están muy parejos ({x} contra {y}), y este queda un poco arriba.',
     motivo_aspecto: 'Están muy parejos, y este gana en {aspecto}, lo que más pesa para vos.',
     motivo_empate: 'No hay una diferencia clara para tu perfil: elegí el que más te guste.',
+    motivo_indistinguibles: 'Con la etiqueta no se pueden distinguir: sus diferencias son más chicas que el margen de error que la ley permite en la tabla.',
     motivo_sin_nota: 'A uno de los dos le falta la tabla nutricional: no puedo decidir.',
     aspecto_proteina: 'proteína',
     aspecto_calorias: 'calorías',

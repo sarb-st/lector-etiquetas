@@ -19,6 +19,7 @@ import { porcionDe } from '../puntaje/derivados.js';
 import { partesAzucar, partesGrasa, cucharaditas } from '../puntaje/composicion.js';
 import { tipoSugerencia, mejorasSugeridas } from '../puntaje/sugerencia.js';
 import { htmlRestricciones, nombreRestriccion } from './me-cae-bien.js';
+import { CAPITULO_DE, hrefCapitulo, capituloDelResultado } from '../guia/guia.js';
 
 const NIVELES_PROCESAMIENTO = ['natural', 'minimo', 'procesado', 'ultra'];
 const ICONO_CHIP = { exceso: 'alerta', flojo: 'menos', bueno: 'mas' };
@@ -121,6 +122,7 @@ function avisoRestricciones(entrada) {
       <ul class="lista-restricciones">${htmlRestricciones(r)}</ul>
       ${r.trazas ? `<p class="ayuda-bloque">${esc(t('meCaeBien.trazas'))}: "${esc(r.trazas)}"</p>` : ''}
       <p class="ayuda-bloque">${esc(t('meCaeBien.avisoFijo'))}</p>
+      <a class="link-flecha tocable" href="${hrefCapitulo(CAPITULO_DE.alergenos)}">${esc(t('hoja.leerMas'))}</a>
     </details>`;
 }
 
@@ -377,7 +379,7 @@ function analisisCompleto(resultado, textos, ficha) {
     }
     ${
       textos.dato
-        ? `<div class="caja-dato"><p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p><h3>${esc(textos.dato.titulo)}</h3><p>${esc(textos.dato.texto)}</p></div>`
+        ? `<div class="caja-dato"><p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p><h3>${esc(textos.dato.titulo)}</h3><p>${esc(textos.dato.texto)}</p><a class="link-guia-dato" href="${hrefCapitulo(textos.dato.capitulo ?? capituloDelResultado(resultado))}">${esc(t('hoja.leerMas'))}</a></div>`
         : ''
     }
     <button type="button" class="boton-secundario tocable" data-accion="no-coinciden">${icono('bandera', 'sm')}${esc(t('resultado.noCoinciden'))}</button>`;
@@ -619,5 +621,5 @@ export function contenidoHojaEtiqueta(id, clave, tipo) {
     <section><p class="rotulo">${esc(t('hoja.queSignifica'))}</p><p>${esc(t(`significados.${clave}`))}</p></section>
     ${propio.porQue ? `<section><p class="rotulo">${esc(t('hoja.porQue'))}</p><p>${esc(propio.porQue)}</p></section>` : ''}
     ${propio.paraVos ? `<section class="para-vos"><p class="rotulo">${esc(t('hoja.paraVos'))}</p><p>${esc(propio.paraVos)}</p></section>` : ''}
-    <a class="link-guia tocable" href="#/guia">${icono('libro')}<span>${esc(t('hoja.leerMas'))}</span>${icono('derecha')}</a>`;
+    <a class="link-guia tocable" href="${hrefCapitulo(CAPITULO_DE[clave])}">${icono('libro')}<span>${esc(t('hoja.leerMas'))}</span>${icono('derecha')}</a>`;
 }

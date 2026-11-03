@@ -8,6 +8,7 @@ import { leerPerfil, agregarAlHistorial, buscarEnHistorial } from '../datos/alma
 import { idioma } from '../i18n/index.js';
 import { chequear, restriccionesDelPerfil, textoDeFicha } from './chequeo.js';
 import { miniatura } from '../datos/fotos.js';
+import { capituloDelResultado, capituloDeComparacion, capituloParaIA, pedidoDatoDesdeGuia } from '../guia/guia.js';
 import { tipoSugerencia } from '../puntaje/sugerencia.js';
 
 const NOMBRE_IDIOMA = { es: 'español', en: 'inglés' };
@@ -78,6 +79,8 @@ function perfilParaTextos(perfil) {
 
 export async function escribirTextos(ficha, resultado, perfil) {
   const nivel = perfil?.nivel ?? 'basico';
+  const capitulo = capituloDelResultado(resultado);
+  const guia = await capituloParaIA(capitulo, nivel);
   const etiquetas = [...resultado.deUnVistazo.map((c) => c.clave), ...resultado.sirvePara];
   const datos = {
     ficha: {
@@ -107,6 +110,7 @@ export async function escribirTextos(ficha, resultado, perfil) {
     etiquetasAExplicar: etiquetas,
   };
   const contenido = [{ type: 'text', text: `Escribí los textos para este análisis:\n${JSON.stringify(datos, null, 2)}` }];
+  if (guia) contenido.push({ type: 'text', text: pedidoDatoDesdeGuia(guia) });
   const { datos: textos } = await pedirJSON({
     sistema: sistemaTextos(idioma(), nivel),
     contenido,
@@ -118,6 +122,8 @@ export async function escribirTextos(ficha, resultado, perfil) {
   const porClave = {};
   for (const e of textos.etiquetas ?? []) porClave[e.clave] = { porQue: e.porQue, paraVos: e.paraVos };
   textos.etiquetas = porClave;
+  // El link "Leer más en la guía" del dato lleva al capítulo que se usó.
+  if (textos.dato) textos.dato.capitulo = capitulo;
   return textos;
 }
 
@@ -192,9 +198,13 @@ export async function datoComparacion(fichaA, fichaB, comparacion) {
   const sistema = `${sistemaTextos(idioma(), perfil?.nivel ?? 'basico')}
 
 En este pedido escribís solo un dato educativo corto para el pie de una comparación entre dos productos: algo que ayude a entender la diferencia entre ellos o a elegir mejor la próxima vez. Título en forma de pregunta y una o dos frases. No repitas la decisión ni la contradigas.`;
+  const capitulo = capituloDeComparacion(comparacion);
+  const guia = await capituloParaIA(capitulo, perfil?.nivel ?? 'basico');
+  const contenido = [{ type: 'text', text: JSON.stringify(datos, null, 2) }];
+  if (guia) contenido.push({ type: 'text', text: pedidoDatoDesdeGuia(guia) });
   const { datos: dato } = await pedirJSON({
     sistema,
-    contenido: [{ type: 'text', text: JSON.stringify(datos, null, 2) }],
+    contenido,
     esquema: {
       type: 'object',
       properties: { titulo: { type: 'string' }, texto: { type: 'string' } },
@@ -204,7 +214,7 @@ En este pedido escribís solo un dato educativo corto para el pie de una compara
     esfuerzo: 'low',
     maxTokens: 4000,
   });
-  return dato;
+  return { ...dato, capitulo };
 }
 
 // Después de corregir el tipo de producto: vuelve a escribir los textos con la ficha nueva.

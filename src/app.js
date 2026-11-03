@@ -21,6 +21,7 @@ import { pantallaMisProductos, quitarDeMisProductos } from './pantallas/mis-prod
 import { leerPerfil, leerHistorial, buscarEnHistorial } from './datos/almacen.js';
 import { pantallaComparar, pantallaElegir, ponerEnCasilla, montarComparar } from './pantallas/comparar.js';
 import { pantallaCrearClave } from './pantallas/crear-clave.js';
+import { pantallaGuia, pantallaCapitulo, montarGuia } from './pantallas/guia.js';
 import {
   pantallaMeCaeBien,
   pantallaPuntual,
@@ -47,19 +48,6 @@ const raiz = document.getElementById('app');
 const tabbar = document.getElementById('tabbar');
 const hoja = document.getElementById('hoja');
 
-function enConstruccion(titulo) {
-  return `
-    <div class="pantalla">
-      <header class="barra-superior">
-        <a class="boton-redondo tocable" href="#/" aria-label="${esc(t('resultado.volver'))}">${icono('atras')}</a>
-      </header>
-      <div class="en-construccion">
-        <h1>${esc(titulo)}</h1>
-        <p>${esc(t('construccion.texto'))}</p>
-      </div>
-    </div>`;
-}
-
 // Cada ruta: qué pantalla dibuja y qué pestaña queda marcada (null = sin barra).
 const rutas = [
   { patron: /^\/?$/, tab: 'inicio', dibujar: () => pantallaInicio() },
@@ -70,7 +58,13 @@ const rutas = [
     montar: montarResultado,
   },
   { patron: /^\/mis-productos$/, tab: 'misProductos', dibujar: () => pantallaMisProductos() },
-  { patron: /^\/guia$/, tab: 'guia', dibujar: () => enConstruccion(t('tabs.guia')) },
+  { patron: /^\/guia(?:\/([a-z]+))?$/, tab: 'guia', dibujar: (m) => pantallaGuia(m[1]), montar: montarGuia },
+  {
+    patron: /^\/guia\/([a-z]+)\/(\d+)$/,
+    tab: null,
+    dibujar: (m) => pantallaCapitulo(m[1], m[2]),
+    montar: montarGuia,
+  },
   { patron: /^\/perfil$/, tab: 'perfil', dibujar: () => pantallaPerfil() },
   { patron: /^\/ajustes$/, tab: null, dibujar: () => pantallaAjustes() },
   { patron: /^\/crear-clave$/, tab: null, dibujar: () => pantallaCrearClave() },

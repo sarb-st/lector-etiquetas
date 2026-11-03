@@ -10,6 +10,7 @@ import { icono } from '../ui/iconos.js';
 import { esc, claseBanda, iconoLinea, resultadoActual, fotoProducto, filaProducto } from '../ui/comunes.js';
 import { leerPerfil, leerHistorial, buscarEnHistorial } from '../datos/almacen.js';
 import { comparar } from '../puntaje/comparar.js';
+import { hrefCapitulo } from '../guia/guia.js';
 
 const casillas = { a: null, b: null };
 // Datos educativos ya pedidos, para no volver a pagar por el mismo par de productos.
@@ -29,7 +30,7 @@ export async function montarComparar(raiz) {
     datos.set(clave, dato);
     const actual = document.querySelector(`[data-dato="${CSS.escape(clave)}"]`);
     if (actual) {
-      actual.innerHTML = `<p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p><h3>${esc(dato.titulo)}</h3><p>${esc(dato.texto)}</p>`;
+      actual.innerHTML = htmlDato(dato);
     }
   } catch {
     // Sin dato no pasa nada: la comparación ya está completa.
@@ -43,6 +44,12 @@ export function ponerEnCasilla(lugar, id) {
   if (buscarEnHistorial(id)) casillas[lugar] = id;
   history.replaceState(null, '', '#/comparar');
   return pantallaComparar();
+}
+
+function htmlDato(dato, conRotulo = true) {
+  const rotulo = conRotulo ? `<p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p>` : '';
+  const link = dato.capitulo != null ? `<a class="link-guia-dato" href="${hrefCapitulo(dato.capitulo)}">${esc(t('hoja.leerMas'))}</a>` : '';
+  return `${rotulo}<h3>${esc(dato.titulo)}</h3><p>${esc(dato.texto)}</p>${link}`;
 }
 
 function barra(volver = '#/') {
@@ -85,6 +92,7 @@ function motivo(c, nombres) {
   const g = c.ganador;
   if (c.motivo.tipo === 'sin_nota') return t('comparar.motivo_sin_nota');
   if (c.motivo.tipo === 'empate') return t('comparar.motivo_empate');
+  if (c.motivo.tipo === 'indistinguibles') return t('comparar.motivo_indistinguibles');
   const otro = g === 'a' ? 'b' : 'a';
   const rg = c[g];
   const ro = c[otro];
@@ -166,7 +174,7 @@ function resultadoComparacion(entradaA, entradaB) {
       ? ''
       : `<div class="caja-dato" data-dato="${esc(claveDato)}" aria-live="polite">
           <p class="rotulo">${icono('lamparita', 'sm')}${esc(t('resultado.dato').toUpperCase())}</p>
-          ${dato ? `<h3>${esc(dato.titulo)}</h3><p>${esc(dato.texto)}</p>` : `<p>${esc(t('comparar.buscandoDato'))}</p>`}
+          ${dato ? htmlDato(dato, false) : `<p>${esc(t('comparar.buscandoDato'))}</p>`}
         </div>`;
 
   return `
