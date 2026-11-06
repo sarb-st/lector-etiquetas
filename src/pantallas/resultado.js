@@ -21,7 +21,7 @@ import { restriccionesDelPerfil } from '../ia/chequeo.js';
 import { porcionDe } from '../puntaje/derivados.js';
 import { partesAzucar, partesGrasa, cucharaditas } from '../puntaje/composicion.js';
 import { tipoSugerencia, mejorasSugeridas, referenciasSugerencia } from '../puntaje/sugerencia.js';
-import { htmlRestricciones, nombreRestriccion } from './me-cae-bien.js';
+import { htmlRestricciones, subtituloVeredicto } from './me-cae-bien.js';
 import { CAPITULO_DE, hrefCapitulo, capituloDelResultado } from '../guia/guia.js';
 
 const NIVELES_PROCESAMIENTO = ['natural', 'minimo', 'procesado', 'ultra'];
@@ -143,17 +143,16 @@ function avisoRestricciones(entrada) {
     return `<p class="escribiendo-textos" role="status"><span class="punto-vivo" aria-hidden="true"></span>${esc(t('resultado.revisandoRestricciones'))}</p>`;
   }
   if (!r) return '';
-  const noAptas = r.restricciones.filter((x) => x.estado === 'no_apto').map((x) => nombreRestriccion(x.clave));
-  const subtitulo =
-    r.general === 'no_apto' ? t('meCaeBien.contiene', { lista: noAptas.join(', ') }) : t(`meCaeBien.sub_${r.general}`);
+  const subtitulo = subtituloVeredicto(r);
   return `
     <details class="veredicto-chico estado-${r.general}">
       <summary>
-        ${icono(r.general === 'no_apto' ? 'prohibido' : r.general === 'revisar' ? 'alerta' : 'escudo')}
+        ${icono(r.general === 'no_apto' ? 'mano' : r.general === 'revisar' ? 'lupa' : 'carita')}
         <span><strong>${esc(t(`meCaeBien.veredicto_${r.general}`))}</strong> ${esc(subtitulo)}</span>
       </summary>
       <ul class="lista-restricciones">${htmlRestricciones(r)}</ul>
       ${r.trazas ? `<p class="ayuda-bloque">${esc(t('meCaeBien.trazas'))}: "${esc(r.trazas)}"</p>` : ''}
+      ${r.general === 'revisar' ? `<p class="ayuda-bloque">${esc(t('meCaeBien.cuidado'))}</p>` : ''}
       <p class="ayuda-bloque">${esc(t('meCaeBien.avisoFijo'))}</p>
       <a class="link-flecha tocable" href="${hrefCapitulo(CAPITULO_DE.alergenos)}">${esc(t('hoja.leerMas'))}</a>
     </details>`;

@@ -196,7 +196,7 @@ async function completarEntrada(id, ficha, resultado, perfil) {
     resultado.nota === null ? {} : escribirTextos(ficha, resultado, perfil).catch((error) => ({ error: error.tipo ?? 'otro' })),
     restricciones.length && textoIngredientes
       ? // Si el chequeo falla, el análisis sigue igual: se puede revisar después en "¿Me cae bien?".
-        chequear({ texto: textoIngredientes, trazas: ficha.trazas }, restricciones).catch(() => null)
+        chequear({ texto: textoIngredientes, trazas: ficha.trazas, nutrientes: ficha.nutrientes }, restricciones).catch(() => null)
       : null,
   ]);
   enCurso.delete(id);

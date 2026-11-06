@@ -217,7 +217,7 @@ window.addEventListener('entrada-actualizada', (evento) => {
     if (abierta) alternarAnalisis(true);
   };
   if (hoja.open) hoja.addEventListener('close', actualizar, { once: true });
-  else if (chatAbierto()) document.getElementById('chat').addEventListener('close', actualizar, { once: true });
+  else if (chatAbierto()) window.addEventListener('chat-cerrado', actualizar, { once: true });
   else actualizar();
 });
 
@@ -230,7 +230,7 @@ dialogoChat.addEventListener('cancel', (evento) => {
   evento.preventDefault();
   cerrarChat();
 });
-dialogoChat.addEventListener('close', () => {
+window.addEventListener('chat-cerrado', () => {
   if (raiz.querySelector('.pantalla-resultado')) redibujar();
 });
 
@@ -342,6 +342,7 @@ despedirBienvenida(!leerPerfil() && leerHistorial().length === 0);
 navegar();
 
 // Para abrir sin conexión y poder instalarla en la pantalla de inicio.
-if ('serviceWorker' in navigator) {
+// (No en las pruebas de flujo: ahí la app corre desde tests/.)
+if ('serviceWorker' in navigator && !location.pathname.includes('/tests/')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

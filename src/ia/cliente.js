@@ -4,7 +4,8 @@
 import { leer, guardar } from '../datos/almacen.js';
 import { leerAjustes, leerClave, MODELOS } from '../pantallas/ajustes.js';
 
-const URL_SDK = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.134.0/+esm';
+// Librería oficial de Claude, copiada dentro de la app (herramientas/copiar-librerias.py).
+const URL_SDK = '../vendor/anthropic-sdk.js';
 
 // Precio en dólares por millón de tokens (consultado el 28/10/2026).
 const PRECIOS = {

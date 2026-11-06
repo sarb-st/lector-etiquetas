@@ -1,11 +1,11 @@
 // Service worker: deja que la app abra sin conexión (historial, perfil, Mis productos).
 // - Archivos de la app: primero la red (así llegan las actualizaciones); sin red, la copia guardada.
-// - Librerías y tipografías de internet: primero la copia guardada (no cambian, tienen versión fija).
+// - Tipografías y fotos de productos de internet: primero la copia guardada (no cambian).
 // - Claude y Open Food Facts nunca se guardan: siempre van a la red.
 // El nombre del caché es propio de esta app, porque usuario.github.io lo comparten todas.
 
-const CACHE = 'lector-etiquetas-v17';
-const EXTERNOS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com', 'images.openfoodfacts.org'];
+const CACHE = 'lector-etiquetas-v18';
+const EXTERNOS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'images.openfoodfacts.org'];
 
 self.addEventListener('install', (evento) => {
   evento.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['./', './index.html'])));

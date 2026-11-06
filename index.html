@@ -2,6 +2,19 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
+    <!--
+      Regla de seguridad (CSP): con quién puede hablar la app. Si alguna vez se colara código
+      ajeno, el navegador no lo dejaría mandar la clave ni los datos a ningún otro lado.
+      - Código: solo los archivos de la app (las librerías están copiadas en src/vendor).
+      - Pedidos: Claude (api.anthropic.com) y Open Food Facts (world.openfoodfacts.org).
+      - Imágenes: las de la app, las fotos del propio teléfono y las de Open Food Facts.
+      - Estilos y tipografías: los de la app y Google Fonts.
+      Si se suma un servicio nuevo, hay que agregarlo acá o el navegador lo va a bloquear.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; connect-src 'self' https://api.anthropic.com https://world.openfoodfacts.org; img-src 'self' data: blob: https://images.openfoodfacts.org https://static.openfoodfacts.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; media-src 'self' blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)" />

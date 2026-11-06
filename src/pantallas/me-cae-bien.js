@@ -12,7 +12,7 @@ import { nombreOpcion } from './preguntas.js';
 import { iniciarLector, visorCamara, detenerCamara, empezarAnalisisDesde } from './analizar.js';
 import { buscarEnOpenFoodFacts } from '../datos/open-food-facts.js';
 import { prepararFoto } from '../datos/fotos.js';
-import { chequear, restriccionesDelPerfil, INTOLERANCIAS, DIETAS, EVITA_RAPIDOS } from '../ia/chequeo.js';
+import { chequear, restriccionesDelPerfil, INTOLERANCIAS, DIETAS, EVITA_RAPIDOS, SALUD_CHEQUEO } from '../ia/chequeo.js';
 import { ALERGENOS } from '../ia/instrucciones.js';
 import { irA } from '../ui/rutas.js';
 
@@ -28,6 +28,7 @@ export function nombreRestriccion(clave) {
   if (tipo === 'alergia') return nombreOpcion('restricciones1', valor);
   if (tipo === 'intolerancia') return nombreOpcion('restricciones2', valor);
   if (tipo === 'dieta') return nombreOpcion('restricciones1', valor);
+  if (tipo === 'salud') return nombreOpcion('salud', valor);
   if (tipo === 'evita' && EVITA_RAPIDOS.includes(valor)) return nombreOpcion('restricciones2', valor);
   return valor;
 }
@@ -112,6 +113,7 @@ export function pantallaPuntual() {
       ${grupoPastillas(t('preguntas.restricciones1.bloques.alergias'), ALERGENOS.map((a) => `alergia:${a}`))}
       ${grupoPastillas(t('preguntas.restricciones2.bloques.intolerancias'), INTOLERANCIAS.map((i) => `intolerancia:${i}`))}
       ${grupoPastillas(t('preguntas.restricciones1.bloques.alimentacion'), DIETAS.map((d) => `dieta:${d}`))}
+      ${grupoPastillas(t('meCaeBien.salud'), SALUD_CHEQUEO.map((s) => `salud:${s}`))}
       ${grupoPastillas(t('meCaeBien.otros'), EVITA_RAPIDOS.map((e) => `evita:${e}`))}
       <div class="barra-acciones">
         <a class="boton-principal tocable centrado ${estado.restricciones.length ? '' : 'deshabilitado'}"
@@ -173,7 +175,7 @@ async function usarCodigo(codigo) {
     return;
   }
   estado.off = encontrado.completo ? encontrado.datos : null;
-  await correr({ texto: encontrado.datos.ingredientes, trazas: encontrado.datos.trazas });
+  await correr({ texto: encontrado.datos.ingredientes, trazas: encontrado.datos.trazas, nutrientes: encontrado.datos.nutrientes });
 }
 
 export async function recibirFotoMcb(entrada) {
@@ -210,7 +212,21 @@ function irAResultado() {
 
 // ---------- Resultado ----------
 
-const ICONO_ESTADO = { no_apto: 'cruz', revisar: 'alerta', apto: 'tilde' };
+// Íconos de los carteles: carita (te cae bien), lupa (mirá este detalle), mano (no te cae bien).
+const ICONO_ESTADO = { no_apto: 'mano', revisar: 'lupa', apto: 'carita' };
+
+// Lo que va debajo del cartel: qué contiene, qué detalle encontró o que no encontró nada.
+export function subtituloVeredicto(r) {
+  if (r.general === 'no_apto') {
+    const lista = r.restricciones.filter((x) => x.estado === 'no_apto').map((x) => nombreRestriccion(x.clave));
+    return t('meCaeBien.contiene', { lista: lista.join(', ') });
+  }
+  if (r.general === 'revisar') {
+    const detalle = r.restricciones.find((x) => x.estado === 'revisar');
+    return detalle?.explicacion || t('meCaeBien.sub_revisar');
+  }
+  return t('meCaeBien.sub_apto');
+}
 
 // Lista de restricciones con su estado (la usa también el resultado del análisis).
 export function htmlRestricciones(r) {
@@ -254,11 +270,7 @@ export function pantallaResultadoMcb() {
     irA('#/me-cae-bien');
     return '<div class="pantalla"></div>';
   }
-  const noAptas = r.restricciones.filter((x) => x.estado === 'no_apto').map((x) => nombreRestriccion(x.clave));
-  const subtitulo =
-    r.general === 'no_apto'
-      ? t('meCaeBien.contiene', { lista: noAptas.join(', ') })
-      : t(`meCaeBien.sub_${r.general}`);
+  const subtitulo = subtituloVeredicto(r);
 
   const filas = htmlRestricciones(r);
 
@@ -273,8 +285,8 @@ export function pantallaResultadoMcb() {
         </div>
       </div>
       <section class="veredicto estado-${r.general}" role="status">
-        ${icono(r.general === 'no_apto' ? 'prohibido' : ICONO_ESTADO[r.general], 'lg')}
-        <div><h2>${esc(t(`meCaeBien.veredicto_${r.general}`))}</h2><p>${esc(subtitulo)}</p></div>
+        <span class="icono-veredicto">${icono(ICONO_ESTADO[r.general], 'lg')}</span>
+        <div><h2>${esc(t(`meCaeBien.veredicto_${r.general}`))}</h2><p>${esc(subtitulo)}</p>${r.general === 'revisar' ? `<p class="nota-cuidado">${esc(t('meCaeBien.cuidado'))}</p>` : ''}</div>
       </section>
       <ul class="tarjeta lista-restricciones">${filas}</ul>
       ${

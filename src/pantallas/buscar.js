@@ -34,7 +34,8 @@ function filas(resultados) {
 export function pantallaBuscar(lugar = null) {
   textoBuscado = '';
   const lista = blsCargado();
-  const volver = lugar ? `#/analizar/comparar/${lugar}` : '#/analizar';
+  // Atrás: desde Comparar vuelve a Comparar; si no, al inicio.
+  const volver = lugar ? '#/comparar' : '#/';
   return `
     <div class="pantalla pantalla-buscar" data-lugar="${esc(lugar ?? '')}">
       <header class="barra-superior">

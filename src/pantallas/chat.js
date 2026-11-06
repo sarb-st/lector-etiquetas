@@ -124,6 +124,8 @@ export function cerrarChat() {
     listo = true;
     d.close();
     d.innerHTML = '';
+    // Aviso propio (el evento "close" del navegador puede llegar tarde): la pantalla se actualiza.
+    window.dispatchEvent(new Event('chat-cerrado'));
   };
   if (reducido()) return terminar();
   const duracion = 320;

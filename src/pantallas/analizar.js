@@ -14,7 +14,8 @@ import { analizarProducto } from '../ia/analisis.js';
 import { irA, enRuta, redibujarRuta } from '../ui/rutas.js';
 import { aporteParaOFF, cuentaLista, guardarAportePendiente, compartirConOFF } from '../datos/subir-off.js';
 
-const URL_ZXING = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/+esm';
+// Lector de códigos de barras, copiado dentro de la app (herramientas/copiar-librerias.py).
+const URL_ZXING = '../vendor/zxing-browser.js';
 
 // Estado del análisis en curso (se pierde al salir de la app, a propósito).
 let estado = nuevoEstado();
